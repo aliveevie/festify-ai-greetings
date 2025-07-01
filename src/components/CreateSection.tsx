@@ -7,26 +7,26 @@ const CreateSection = () => {
   const steps = [
     {
       icon: Brain,
-      title: "Design AI Agent",
-      description: "Create a custom AI personality with unique traits and cultural knowledge",
+      title: "Use AI Agent",
+      description: "Leverage AI agents to craft personalized greetings with cultural knowledge and emotional depth",
       color: "from-festify-lemon-green to-festify-green"
     },
     {
       icon: Brush,
-      title: "Customize Greeting",
-      description: "Design beautiful card templates and personalize the greeting content",
+      title: "Customize Design",
+      description: "Design beautiful card templates and personalize the greeting content with AI assistance",
       color: "from-festify-light-blue to-festify-apple-green"
     },
     {
       icon: Gem,
       title: "Mint as NFT",
-      description: "Transform your AI agent into a unique, collectible NFT on the blockchain",
+      description: "Transform your AI-created greeting into a unique, collectible NFT on the blockchain",
       color: "from-festify-lemon-orange to-festify-light-blue"
     },
     {
       icon: Send,
       title: "Send & Share",
-      description: "Share your interactive AI-powered greetings with friends and family",
+      description: "Share your interactive NFT-powered greetings with friends and family",
       color: "from-festify-green to-festify-apple-green"
     }
   ];
@@ -39,7 +39,7 @@ const CreateSection = () => {
             <span className="festive-text">How It Works</span>
           </h2>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Create your first AI-powered festival greeting in just four simple steps
+            Create your first AI-powered NFT greeting in just four simple steps
           </p>
         </div>
 

@@ -6,14 +6,14 @@ const Features = () => {
   const features = [
     {
       icon: Bot,
-      title: "AI Agent Customization",
-      description: "Design custom AI personalities with unique traits, cultural knowledge, and memory of shared experiences.",
+      title: "AI Agent Assistance",
+      description: "Use intelligent AI agents to create personalized greetings with cultural knowledge and emotional understanding.",
       color: "text-festify-lemon-green"
     },
     {
       icon: Coins,
       title: "NFT Integration",
-      description: "ERC721 standard implementation with IPFS metadata storage and cross-chain compatibility.",
+      description: "ERC721 standard implementation with IPFS metadata storage for permanent, ownable digital greetings.",
       color: "text-festify-light-blue"
     },
     {
@@ -25,19 +25,19 @@ const Features = () => {
     {
       icon: Zap,
       title: "Interactive Experience",
-      description: "AI-powered cards that respond to recipients and create engaging conversations.",
+      description: "AI-powered NFT greetings that respond to recipients and create engaging conversations.",
       color: "text-festify-lemon-orange"
     },
     {
       icon: Globe,
       title: "Cross-Chain Support",
-      description: "Built on Celo and Optimism networks with plans for multi-chain expansion.",
+      description: "Multi-chain compatibility ensuring your NFT greetings work across different blockchain networks.",
       color: "text-festify-apple-green"
     },
     {
       icon: Shield,
       title: "Permanent Ownership",
-      description: "True ownership through blockchain technology with royalty mechanisms for artists.",
+      description: "True ownership through blockchain technology with royalty mechanisms for creators.",
       color: "text-festify-lemon-green"
     }
   ];
@@ -50,7 +50,7 @@ const Features = () => {
             <span className="festive-text">Revolutionary Features</span>
           </h2>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Discover how Festify transforms digital celebrations with cutting-edge AI and blockchain technology
+            Discover how Festify transforms digital celebrations with AI-powered NFT greetings
           </p>
         </div>
 
