@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,6 +62,13 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				festify: {
+					'lemon-green': '#ADFF2F',
+					'light-blue': '#87CEEB',
+					'green': '#32CD32',
+					'lemon-orange': '#FFD700',
+					'apple-green': '#8FBC8F'
 				}
 			},
 			borderRadius: {
@@ -84,11 +92,25 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'float': {
+					'0%, 100%': { transform: 'translateY(0px)' },
+					'50%': { transform: 'translateY(-20px)' }
+				},
+				'glow': {
+					'0%, 100%': { boxShadow: '0 0 20px rgba(173, 255, 47, 0.5)' },
+					'50%': { boxShadow: '0 0 40px rgba(173, 255, 47, 0.8)' }
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'float': 'float 3s ease-in-out infinite',
+				'glow': 'glow 2s ease-in-out infinite'
+			},
+			backgroundImage: {
+				'festive-gradient': 'linear-gradient(135deg, #ADFF2F 0%, #87CEEB 25%, #32CD32 50%, #FFD700 75%, #8FBC8F 100%)',
+				'card-gradient': 'linear-gradient(145deg, rgba(173, 255, 47, 0.1) 0%, rgba(135, 206, 235, 0.1) 100%)'
 			}
 		}
 	},
