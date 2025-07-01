@@ -1,6 +1,6 @@
-
 import { Button } from "@/components/ui/button";
 import { Sparkles, Heart, Palette } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Hero = () => {
   return (
@@ -27,10 +27,12 @@ const Hero = () => {
         </p>
 
         <div className="flex flex-col md:flex-row gap-4 justify-center items-center mb-12">
-          <Button className="bg-gradient-to-r from-festify-lemon-green to-festify-green hover:from-festify-green hover:to-festify-apple-green text-white px-8 py-4 text-lg rounded-full transition-all duration-300 transform hover:scale-105">
-            <Sparkles className="w-5 h-5 mr-2" />
-            Create NFT Greeting
-          </Button>
+          <Link to="/create">
+            <Button className="bg-gradient-to-r from-festify-lemon-green to-festify-green hover:from-festify-green hover:to-festify-apple-green text-white px-8 py-4 text-lg rounded-full transition-all duration-300 transform hover:scale-105">
+              <Sparkles className="w-5 h-5 mr-2" />
+              Create NFT Greeting
+            </Button>
+          </Link>
           <Button variant="outline" className="border-2 border-festify-green text-festify-green hover:bg-festify-green hover:text-white px-8 py-4 text-lg rounded-full transition-all duration-300">
             <Heart className="w-5 h-5 mr-2" />
             Explore Gallery

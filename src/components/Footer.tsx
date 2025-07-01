@@ -52,7 +52,7 @@ const Footer = () => {
             Made with <Heart className="w-4 h-4 mx-1 text-red-400" /> for digital celebrations
           </p>
           <p className="text-gray-400 text-sm mt-2">
-            © 2024 Festify. All rights reserved. Built on Celo & Optimism networks.
+            © 2024 Festify. All rights reserved.
           </p>
         </div>
       </div>

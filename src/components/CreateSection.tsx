@@ -2,6 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowRight, Brush, Brain, Gem, Send } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const CreateSection = () => {
   const steps = [
@@ -71,10 +72,12 @@ const CreateSection = () => {
         </div>
 
         <div className="text-center">
-          <Button className="bg-gradient-to-r from-festify-lemon-green to-festify-green hover:from-festify-green hover:to-festify-apple-green text-white px-12 py-4 text-xl rounded-full transition-all duration-300 transform hover:scale-105">
-            <Brain className="w-6 h-6 mr-3" />
-            Start Creating Now
-          </Button>
+          <Link to="/create">
+            <Button className="bg-gradient-to-r from-festify-lemon-green to-festify-green hover:from-festify-green hover:to-festify-apple-green text-white px-12 py-4 text-xl rounded-full transition-all duration-300 transform hover:scale-105">
+              <Brain className="w-6 h-6 mr-3" />
+              Start Creating Now
+            </Button>
+          </Link>
         </div>
       </div>
     </section>
