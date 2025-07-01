@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Brain, Sparkles, Send, ArrowRight, Gem } from "lucide-react";
 import AIResponseDisplay from "./AIResponseDisplay";
 import GreetingPreview from "./GreetingPreview";
+import SuccessModal from "./SuccessModal";
 
 const AIGreetingCreator = () => {
   const [step, setStep] = useState(1);
@@ -13,6 +14,7 @@ const AIGreetingCreator = () => {
   const [aiResponse, setAiResponse] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [greetingData, setGreetingData] = useState(null);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const handleGenerateGreeting = async () => {
     if (!prompt.trim()) return;
@@ -60,7 +62,10 @@ Generating your unique NFT-powered greeting...`,
     setStep(4);
     // Simulate minting process
     setTimeout(() => {
-      alert("🎉 Your AI-powered greeting has been minted as an NFT! You can now send it to your loved ones.");
+      setShowSuccessModal(true);
+      setStep(1); // Reset to beginning
+      setPrompt("");
+      setGreetingData(null);
     }, 2000);
   };
 
@@ -168,6 +173,12 @@ Generating your unique NFT-powered greeting...`,
           </Card>
         )}
       </div>
+
+      <SuccessModal 
+        isOpen={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+        greetingData={greetingData}
+      />
     </div>
   );
 };

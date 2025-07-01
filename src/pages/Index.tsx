@@ -3,7 +3,7 @@ import Header from "@/components/Header";
 import Hero from "@/components/Hero";
 import Features from "@/components/Features";
 import CreateSection from "@/components/CreateSection";
-import Community from "@/components/Community";
+import MyGreetings from "@/components/MyGreetings";
 import Footer from "@/components/Footer";
 
 const Index = () => {
@@ -13,7 +13,7 @@ const Index = () => {
       <Hero />
       <Features />
       <CreateSection />
-      <Community />
+      <MyGreetings />
       <Footer />
     </div>
   );
