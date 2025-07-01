@@ -1,18 +1,8 @@
-
-import { Button } from "@/components/ui/button";
-import { Wallet } from "lucide-react";
-import { useState } from "react";
+import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useNavigate } from "react-router-dom";
 
 const Header = () => {
-  const [isWalletConnected, setIsWalletConnected] = useState(false);
   const navigate = useNavigate();
-
-  const connectWallet = async () => {
-    // Placeholder for wallet connection logic
-    console.log("Connecting wallet...");
-    setIsWalletConnected(true);
-  };
 
   const handleMyGreetingsClick = () => {
     navigate("/#my-greetings");
@@ -41,17 +31,7 @@ const Header = () => {
           </button>
         </nav>
 
-        <Button 
-          onClick={connectWallet}
-          className={`${
-            isWalletConnected 
-              ? 'bg-festify-green hover:bg-festify-apple-green' 
-              : 'bg-gradient-to-r from-festify-lemon-green to-festify-green hover:from-festify-green hover:to-festify-apple-green'
-          } text-white transition-all duration-300`}
-        >
-          <Wallet className="w-4 h-4 mr-2" />
-          {isWalletConnected ? 'Connected' : 'Connect Wallet'}
-        </Button>
+        <ConnectButton />
       </div>
     </header>
   );
