@@ -2,14 +2,20 @@
 import { Button } from "@/components/ui/button";
 import { Wallet } from "lucide-react";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const Header = () => {
   const [isWalletConnected, setIsWalletConnected] = useState(false);
+  const navigate = useNavigate();
 
   const connectWallet = async () => {
     // Placeholder for wallet connection logic
     console.log("Connecting wallet...");
     setIsWalletConnected(true);
+  };
+
+  const handleMyGreetingsClick = () => {
+    navigate("/#my-greetings");
   };
 
   return (
@@ -27,7 +33,12 @@ const Header = () => {
         <nav className="hidden md:flex items-center space-x-8">
           <a href="#features" className="text-gray-700 hover:text-festify-green transition-colors">Features</a>
           <a href="#create" className="text-gray-700 hover:text-festify-green transition-colors">Create</a>
-          <a href="#community" className="text-gray-700 hover:text-festify-green transition-colors">Community</a>
+          <button 
+            onClick={handleMyGreetingsClick}
+            className="text-gray-700 hover:text-festify-green transition-colors"
+          >
+            My Greetings
+          </button>
         </nav>
 
         <Button 
