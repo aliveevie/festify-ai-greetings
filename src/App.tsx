@@ -7,15 +7,33 @@ import Create from "./pages/Create";
 import NotFound from "./pages/NotFound";
 import { getDefaultConfig, RainbowKitProvider } from '@rainbow-me/rainbowkit';
 import { WagmiProvider } from 'wagmi';
-import { mainnet, optimism, polygon, arbitrum, base, celo } from 'wagmi/chains'; 
 import '@rainbow-me/rainbowkit/styles.css';
 
 const queryClient = new QueryClient();
 
+const hyperionTestnet = {
+  id: 133717,
+  name: 'Hyperion Testnet',
+  network: 'hyperion-testnet',
+  nativeCurrency: {
+    name: 'Test Metis',
+    symbol: 'tMETIS',
+    decimals: 18,
+  },
+  rpcUrls: {
+    default: { http: ['https://hyperion-testnet.metisdevops.link'] },
+    public: { http: ['https://hyperion-testnet.metisdevops.link'] },
+  },
+  blockExplorers: {
+    default: { name: 'Hyperion Testnet Explorer', url: 'https://hyperion-testnet-explorer.metisdevops.link' },
+  },
+  testnet: true,
+};
+
 const config = getDefaultConfig({
   appName: 'Festify',
   projectId: import.meta.env.VITE_WC_PROJECT_ID,
-  chains: [mainnet, optimism, polygon, arbitrum, base, celo],
+  chains: [hyperionTestnet],
 });
 
 const App = () => (
