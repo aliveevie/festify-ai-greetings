@@ -28,7 +28,7 @@ const AIGreetingCreator = () => {
       const API_BASE_URL =
         window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
           ? 'http://localhost:3001'
-          : 'https://festify-ai-server.vercel.app';
+          : 'https://festify-server-iwil.onrender.com';
       // Use the API base URL for the backend. Automatically picks local or production.
       const res = await fetch(`${API_BASE_URL}/api/generate-greeting`, {
         method: "POST",
