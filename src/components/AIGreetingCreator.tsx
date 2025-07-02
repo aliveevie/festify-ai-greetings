@@ -24,9 +24,12 @@ const AIGreetingCreator = () => {
     setGreetingData(null);
     try {
       console.log("[Frontend] Sending prompt to API:", prompt);
-      // Determine the API base URL: use import.meta.env.VITE_BASE_URL if set, otherwise default to localhost:3001
-      const API_BASE_URL = import.meta.env.VITE_BASE_URL || 'http://localhost:3001';
-      // Use the API base URL for the backend. Set VITE_BASE_URL in your .env file for production.
+      // Dynamically set the API base URL: use localhost for local dev, production URL otherwise
+      const API_BASE_URL =
+        window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+          ? 'http://localhost:3001'
+          : 'https://festify-ai-server.vercel.app';
+      // Use the API base URL for the backend. Automatically picks local or production.
       const res = await fetch(`${API_BASE_URL}/api/generate-greeting`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
