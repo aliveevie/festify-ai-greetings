@@ -7,7 +7,7 @@ app.use(express.json());
 
 // Allow all origins for CORS
 app.use(cors());
-app.options('*', cors());
+app.options('/*any', cors());
 
 const agent = new Agent({
   model: 'gpt-4',
