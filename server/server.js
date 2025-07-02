@@ -1,4 +1,10 @@
-import { Agent } from 'alith';
+const express = require('express');
+const { Agent } = require('alith');
+const cors = require('cors');
+
+const app = express();
+app.use(express.json());
+app.use(cors());
 
 const agent = new Agent({
   model: 'gpt-4',
@@ -6,14 +12,11 @@ const agent = new Agent({
     'You are a professional AI agent specialized in crafting heartfelt, culturally rich, and personalized festival greetings. Your responses should include a title, a warm message, a creative design suggestion, interactive or digital features, and a note on cultural elements. Output your result as a JSON object with keys: title, message, design, interactive, cultural. Be concise, creative, and professional.',
 });
 
-/**
- * @param {import('@vercel/node').VercelRequest} req
- * @param {import('@vercel/node').VercelResponse} res
- */
-export default async function handler(req: any, res: any) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
+app.get('/', (req, res) => {
+  res.send('Alith API server is running');
+});
+
+app.post('/api/generate-greeting', async (req, res) => {
   const prompt = req.body?.prompt || req.query?.prompt;
   if (!prompt || typeof prompt !== 'string') {
     return res.status(400).json({ error: 'Missing or invalid prompt' });
@@ -28,7 +31,6 @@ export default async function handler(req: any, res: any) {
     try {
       parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
     } catch (err) {
-      // Try to extract JSON from text if LLM returns extra text
       const match = raw.match(/\{[\s\S]*\}/);
       if (match) {
         parsed = JSON.parse(match[0]);
@@ -37,8 +39,13 @@ export default async function handler(req: any, res: any) {
       }
     }
     return res.status(200).json({ result: parsed });
-  } catch (error: any) {
+  } catch (error) {
     console.error('[Alith API] Error:', error);
     return res.status(500).json({ error: error?.message || error?.toString() });
   }
-} 
+});
+
+const PORT = process.env.PORT || 3001;
+app.listen(PORT, () => {
+  console.log(`Alith API server running on port ${PORT}`);
+});

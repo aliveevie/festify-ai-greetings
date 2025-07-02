@@ -24,7 +24,10 @@ const AIGreetingCreator = () => {
     setGreetingData(null);
     try {
       console.log("[Frontend] Sending prompt to API:", prompt);
-      const res = await fetch("/api/generate-greeting", {
+      // Determine the API base URL: use import.meta.env.VITE_BASE_URL if set, otherwise default to localhost:3001
+      const API_BASE_URL = import.meta.env.VITE_BASE_URL || 'http://localhost:3001';
+      // Use the API base URL for the backend. Set VITE_BASE_URL in your .env file for production.
+      const res = await fetch(`${API_BASE_URL}/api/generate-greeting`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt }),
