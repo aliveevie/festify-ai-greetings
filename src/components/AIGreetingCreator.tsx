@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,54 +12,43 @@ const AIGreetingCreator = () => {
   const [prompt, setPrompt] = useState("");
   const [aiResponse, setAiResponse] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
-  const [greetingData, setGreetingData] = useState(null);
+  const [greetingData, setGreetingData] = useState<any>(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const handleGenerateGreeting = async () => {
     if (!prompt.trim()) return;
-
     setIsGenerating(true);
     setStep(2);
-
-    // Simulate AI processing
-    setTimeout(() => {
-      const simulatedResponse = generateAIResponse(prompt);
-      setAiResponse(simulatedResponse.thinking);
-      
-      setTimeout(() => {
-        setGreetingData(simulatedResponse.greeting);
-        setStep(3);
-        setIsGenerating(false);
-      }, 2000);
-    }, 1500);
-  };
-
-  const generateAIResponse = (userPrompt: string) => {
-    const responses = {
-      thinking: `🤖 Analyzing your request: "${userPrompt}"
-
-I'm crafting a personalized festival greeting with:
-• Cultural elements and traditions
-• Warm, heartfelt messaging
-• Interactive design elements
-• Personalized touches based on your description
-
-Generating your unique NFT-powered greeting...`,
-      greeting: {
-        title: "Happy Diwali 2024",
-        message: "May this Festival of Lights illuminate your path with joy, prosperity, and endless happiness. Like the diyas that brighten the darkest nights, may your life be filled with warmth and love.",
-        design: "Golden lotus petals with floating lanterns",
-        interactive: "Tap to release virtual diyas that spell out 'Happy Diwali'",
-        cultural: "Traditional Diwali blessings with modern interactive elements"
-      }
-    };
-
-    return responses;
+    setAiResponse(`🤖 Analyzing your request: "${prompt}"
+\nI'm crafting a personalized festival greeting...`);
+    setGreetingData(null);
+    try {
+      console.log("[Frontend] Sending prompt to API:", prompt);
+      const res = await fetch("/api/generate-greeting", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Unknown error from API");
+      console.log("[Frontend] API response:", data);
+      setAiResponse("AI greeting generated successfully!");
+      setGreetingData(data.result);
+      setStep(3);
+    } catch (error: any) {
+      console.error("[Frontend] Error generating greeting:", error);
+      setAiResponse(
+        "❌ There was an error generating your greeting. Please try again.\n" +
+          (error?.message || error?.toString())
+      );
+      setIsGenerating(false);
+      return;
+    }
+    setIsGenerating(false);
   };
 
   const handleMintNFT = () => {
     setStep(4);
-    // Simulate minting process
     setTimeout(() => {
       setShowSuccessModal(true);
       setStep(1); // Reset to beginning
@@ -116,7 +104,7 @@ Generating your unique NFT-powered greeting...`,
               </div>
               <Button 
                 onClick={handleGenerateGreeting}
-                disabled={!prompt.trim()}
+                disabled={!prompt.trim() || isGenerating}
                 className="w-full bg-gradient-to-r from-festify-lemon-green to-festify-green hover:from-festify-green hover:to-festify-apple-green text-white py-3 text-lg"
               >
                 <Sparkles className="w-5 h-5 mr-2" />

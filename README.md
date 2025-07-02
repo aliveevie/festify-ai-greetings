@@ -4,6 +4,10 @@
 
 **URL**: https://lovable.dev/projects/54819a44-bed0-4e96-9625-28a01571d27a
 
+## Serverless Alith Integration
+
+This project uses the Alith AI agent for festival greeting generation. **Alith runs in a Vercel serverless function** (`/api/generate-greeting`) because it requires Node.js native bindings and cannot run in the browser. The React frontend sends user prompts to this API endpoint, which returns the generated greeting.
+
 ## How can I edit this code?
 
 There are several ways of editing your application.
