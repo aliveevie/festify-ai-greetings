@@ -1,4 +1,3 @@
-import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { Agent } from 'alith';
 
 const agent = new Agent({
@@ -7,7 +6,11 @@ const agent = new Agent({
     'You are a professional AI agent specialized in crafting heartfelt, culturally rich, and personalized festival greetings. Your responses should include a title, a warm message, a creative design suggestion, interactive or digital features, and a note on cultural elements. Output your result as a JSON object with keys: title, message, design, interactive, cultural. Be concise, creative, and professional.',
 });
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+/**
+ * @param {import('@vercel/node').VercelRequest} req
+ * @param {import('@vercel/node').VercelResponse} res
+ */
+export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
