@@ -10,21 +10,7 @@ const allowedOrigins = [
   'http://localhost:3000', // add other local ports if needed
 ];
 
-app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin) return callback(null, true); // allow non-browser requests
-    if (allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    } else {
-      return callback(new Error('Not allowed by CORS'));
-    }
-  },
-  credentials: true,
-}));
-app.options('/*any', cors({
-  origin: allowedOrigins,
-  credentials: true,
-}));
+app.use(cors());
 
 const agent = new Agent({
   model: 'gpt-4',
