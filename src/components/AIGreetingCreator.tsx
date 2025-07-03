@@ -25,7 +25,8 @@ const AIGreetingCreator = () => {
     try {
       console.log("[Frontend] Sending prompt to API:", prompt);
       // Dynamically set the API base URL: use localhost for local dev, production URL otherwise
-      const API_BASE_URL =
+    //  const API_BASE_URL =  'https://festify-server-iwil.onrender.com';
+      const API_BASE_URL = 
         window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
           ? 'http://localhost:3001'
           : 'https://festify-server-iwil.onrender.com';
