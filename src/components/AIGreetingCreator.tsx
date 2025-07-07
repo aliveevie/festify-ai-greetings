@@ -6,6 +6,31 @@ import { Brain, Sparkles, Send, ArrowRight, Gem } from "lucide-react";
 import AIResponseDisplay from "./AIResponseDisplay";
 import GreetingPreview from "./GreetingPreview";
 import SuccessModal from "./SuccessModal";
+import FailureModal from "./FailureModal";
+import { useAccount } from 'wagmi';
+import { useWriteContract, useReadContract } from 'wagmi';
+import { toast } from "sonner";
+import { useEffect } from "react";
+
+// ABI and contract address from artifacts
+const CONTRACT_ADDRESS = "0x3C40F3B7488a80D6Cf06697f4537Fb73D3B8d27F";
+const CONTRACT_ABI = [
+  {
+    "inputs": [
+      { "internalType": "address", "name": "to", "type": "address" },
+      { "internalType": "string", "name": "metadataURI", "type": "string" }
+    ],
+    "name": "mint",
+    "outputs": [
+      { "internalType": "uint256", "name": "", "type": "uint256" }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  // ... (other functions/events omitted for brevity)
+];
+
+const HYPERION_CHAIN_ID = 133717;
 
 const AIGreetingCreator = () => {
   const [step, setStep] = useState(1);
@@ -14,6 +39,18 @@ const AIGreetingCreator = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [greetingData, setGreetingData] = useState<any>(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showFailureModal, setShowFailureModal] = useState(false);
+  const [txHash, setTxHash] = useState<string | null>(null);
+  const [failureReason, setFailureReason] = useState<string>("");
+  // TODO: Add FailureModal for error display
+  const [recipient, setRecipient] = useState("");
+  const [minting, setMinting] = useState(false);
+  const [mintError, setMintError] = useState("");
+
+  const { address, isConnected } = useAccount();
+
+  // Write contract for minting
+  const { writeContractAsync } = useWriteContract();
 
   const handleGenerateGreeting = async () => {
     if (!prompt.trim()) return;
@@ -23,14 +60,10 @@ const AIGreetingCreator = () => {
 \nI'm crafting a personalized festival greeting...`);
     setGreetingData(null);
     try {
-      console.log("[Frontend] Sending prompt to API:", prompt);
-      // Dynamically set the API base URL: use localhost for local dev, production URL otherwise
-    //  const API_BASE_URL =  'https://festify-server-iwil.onrender.com';
       const API_BASE_URL = 
         window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
           ? 'http://localhost:3001'
           : 'https://festify-server-iwil.onrender.com';
-      // Use the API base URL for the backend. Automatically picks local or production.
       const res = await fetch(`${API_BASE_URL}/api/generate-greeting`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -38,12 +71,10 @@ const AIGreetingCreator = () => {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Unknown error from API");
-      console.log("[Frontend] API response:", data);
       setAiResponse("AI greeting generated successfully!");
       setGreetingData(data.result);
       setStep(3);
     } catch (error: any) {
-      console.error("[Frontend] Error generating greeting:", error);
       setAiResponse(
         "❌ There was an error generating your greeting. Please try again.\n" +
           (error?.message || error?.toString())
@@ -54,14 +85,92 @@ const AIGreetingCreator = () => {
     setIsGenerating(false);
   };
 
-  const handleMintNFT = () => {
+  const handleMintNFT = async () => {
+    setMintError("");
+    if (!isConnected) {
+      setMintError("Please connect your wallet.");
+      toast.error("Please connect your wallet.");
+      return;
+    }
+    if (!recipient || !/^0x[a-fA-F0-9]{40}$/.test(recipient)) {
+      setMintError("Please enter a valid recipient address.");
+      toast.error("Please enter a valid recipient address.");
+      return;
+    }
+    if (!greetingData) {
+      setMintError("No greeting data to mint.");
+      toast.error("No greeting data to mint.");
+      return;
+    }
+    setMinting(true);
     setStep(4);
-    setTimeout(() => {
-      setShowSuccessModal(true);
-      setStep(1); // Reset to beginning
-      setPrompt("");
-      setGreetingData(null);
-    }, 2000);
+    try {
+      // Prepare metadataURI
+      const metadataURI = greetingData.metadataURI || "ipfs://placeholder";
+      console.log('[MintNFT] Attempting to mint:', { recipient, metadataURI, address });
+      const tx = await writeContractAsync({
+        address: CONTRACT_ADDRESS,
+        abi: CONTRACT_ABI,
+        functionName: "mint",
+        args: [recipient, metadataURI],
+        chainId: HYPERION_CHAIN_ID,
+        account: address,
+        chain: undefined
+      });
+      if (typeof tx === 'string') {
+        setTxHash(tx);
+        let confirmed = false;
+        let errorMsg = "";
+        for (let i = 0; i < 30; i++) {
+          try {
+            const receipt = await (window as any).ethereum.request({
+              method: 'eth_getTransactionReceipt',
+              params: [tx],
+            });
+            console.log('[MintNFT] Receipt poll:', receipt);
+            if (receipt && receipt.status === '0x1') {
+              confirmed = true;
+              break;
+            } else if (receipt && receipt.status === '0x0') {
+              errorMsg = 'Transaction failed on-chain.';
+              console.log('[MintNFT] Transaction failed on-chain:', receipt);
+              break;
+            }
+          } catch (e: any) {
+            console.log('[MintNFT] Error polling for receipt:', e);
+            errorMsg = e?.message || e?.toString();
+            break;
+          }
+          await new Promise(res => setTimeout(res, 2000));
+        }
+        if (confirmed) {
+          setShowSuccessModal(true);
+          setStep(1);
+          setPrompt("");
+          setGreetingData(null);
+          setRecipient("");
+          toast.success("NFT minted successfully!");
+        } else {
+          console.log('[MintNFT] Transaction not confirmed:', errorMsg);
+          setFailureReason(errorMsg || "Transaction was not confirmed in time.");
+          setShowFailureModal(true);
+          setStep(3);
+        }
+      } else {
+        console.log('[MintNFT] No transaction hash returned:', tx);
+        setFailureReason("No transaction hash returned.");
+        setShowFailureModal(true);
+        setStep(3);
+      }
+    } catch (error: any) {
+      console.log('[MintNFT] Error in minting try/catch:', error);
+      setMintError(error?.message || error?.toString());
+      toast.error(error?.message || error?.toString());
+      setFailureReason(error?.message || error?.toString());
+      setShowFailureModal(true);
+      setStep(3);
+    }
+    setMinting(false);
   };
 
   return (
@@ -133,21 +242,37 @@ const AIGreetingCreator = () => {
         {step === 3 && greetingData && (
           <div className="space-y-6">
             <GreetingPreview greetingData={greetingData} />
-            <div className="flex gap-4 justify-center">
-              <Button 
-                variant="outline"
-                onClick={() => setStep(1)}
-                className="px-6 py-3"
-              >
-                Regenerate
-              </Button>
-              <Button 
-                onClick={handleMintNFT}
-                className="bg-gradient-to-r from-festify-lemon-green to-festify-green hover:from-festify-green hover:to-festify-apple-green text-white px-8 py-3"
-              >
-                <Gem className="w-5 h-5 mr-2" />
-                Mint as NFT
-              </Button>
+            <div className="flex flex-col gap-4 items-center">
+              <div className="w-full max-w-md">
+                <label className="block text-sm font-medium mb-2">Recipient Wallet Address</label>
+                <input
+                  type="text"
+                  value={recipient}
+                  onChange={e => setRecipient(e.target.value)}
+                  placeholder="0x..."
+                  className="w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-festify-green"
+                  disabled={minting}
+                />
+              </div>
+              {mintError && <div className="text-red-500 text-sm mb-2">{mintError}</div>}
+              <div className="flex gap-4 justify-center">
+                <Button 
+                  variant="outline"
+                  onClick={() => setStep(1)}
+                  className="px-6 py-3"
+                  disabled={minting}
+                >
+                  Regenerate
+                </Button>
+                <Button 
+                  onClick={handleMintNFT}
+                  className="bg-gradient-to-r from-festify-lemon-green to-festify-green hover:from-festify-green hover:to-festify-apple-green text-white px-8 py-3"
+                  disabled={minting}
+                >
+                  <Gem className="w-5 h-5 mr-2" />
+                  {minting ? "Minting..." : "Mint as NFT"}
+                </Button>
+              </div>
             </div>
           </div>
         )}
@@ -173,6 +298,12 @@ const AIGreetingCreator = () => {
         isOpen={showSuccessModal}
         onClose={() => setShowSuccessModal(false)}
         greetingData={greetingData}
+        txHash={txHash}
+      />
+      <FailureModal
+        isOpen={showFailureModal}
+        onClose={() => setShowFailureModal(false)}
+        reason={failureReason}
       />
     </div>
   );

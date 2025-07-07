@@ -1,4 +1,3 @@
-
 import {
   Dialog,
   DialogContent,
@@ -14,9 +13,10 @@ interface SuccessModalProps {
   isOpen: boolean;
   onClose: () => void;
   greetingData: any;
+  txHash?: string | null;
 }
 
-const SuccessModal = ({ isOpen, onClose, greetingData }: SuccessModalProps) => {
+const SuccessModal = ({ isOpen, onClose, greetingData, txHash }: SuccessModalProps) => {
   const navigate = useNavigate();
 
   const handleViewGreeting = () => {
@@ -129,6 +129,19 @@ const SuccessModal = ({ isOpen, onClose, greetingData }: SuccessModalProps) => {
           </DialogTitle>
           <DialogDescription className="text-gray-600 mt-2">
             Your AI-powered greeting has been minted as an NFT. You can now share it with your loved ones.
+            {txHash && (
+              <div className="mt-4 text-xs text-gray-500 break-all">
+                <span>Transaction Hash: </span>
+                <a
+                  href={`https://hyperion-testnet-explorer.metisdevops.link/tx/${txHash}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-festify-green underline"
+                >
+                  {txHash}
+                </a>
+              </div>
+            )}
           </DialogDescription>
         </DialogHeader>
         
