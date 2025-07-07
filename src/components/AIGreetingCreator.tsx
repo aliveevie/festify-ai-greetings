@@ -11,24 +11,10 @@ import { useAccount } from 'wagmi';
 import { useWriteContract, useReadContract } from 'wagmi';
 import { toast } from "sonner";
 import { useEffect } from "react";
+import FestivalGreetingsArtifact from "../../artifacts/FestivalGreetings.json";
 
-// ABI and contract address from artifacts
-const CONTRACT_ADDRESS = "0x3C40F3B7488a80D6Cf06697f4537Fb73D3B8d27F";
-const CONTRACT_ABI = [
-  {
-    "inputs": [
-      { "internalType": "address", "name": "to", "type": "address" },
-      { "internalType": "string", "name": "metadataURI", "type": "string" }
-    ],
-    "name": "mint",
-    "outputs": [
-      { "internalType": "uint256", "name": "", "type": "uint256" }
-    ],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  // ... (other functions/events omitted for brevity)
-];
+const CONTRACT_ADDRESS = "0xD9BF55E8bC7642AE6931A94ac361559C2F34298e";
+const CONTRACT_ABI = FestivalGreetingsArtifact.abi;
 
 const HYPERION_CHAIN_ID = 133717;
 
