@@ -8,21 +8,32 @@ import {
 import { Button } from "@/components/ui/button";
 import { CheckCircle, Download, Share2, Eye } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 
 interface SuccessModalProps {
   isOpen: boolean;
   onClose: () => void;
   greetingData: any;
   txHash?: string | null;
+  txStatus?: 'pending' | 'confirmed' | 'failed' | null;
 }
 
-const SuccessModal = ({ isOpen, onClose, greetingData, txHash }: SuccessModalProps) => {
+const SuccessModal = ({ isOpen, onClose, greetingData, txHash, txStatus }: SuccessModalProps) => {
   const navigate = useNavigate();
+  const [copied, setCopied] = useState(false);
 
   const handleViewGreeting = () => {
     // Navigate to My Greetings section
     navigate("/#my-greetings");
     onClose();
+  };
+
+  const handleCopyHash = async () => {
+    if (txHash) {
+      await navigator.clipboard.writeText(txHash);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    }
   };
 
   const handleShareGreeting = async () => {
@@ -128,18 +139,33 @@ const SuccessModal = ({ isOpen, onClose, greetingData, txHash }: SuccessModalPro
             NFT Greeting Created Successfully!
           </DialogTitle>
           <DialogDescription className="text-gray-600 mt-2">
-            Your AI-powered greeting has been minted as an NFT. You can now share it with your loved ones.
+            <div className="mb-2">Your AI-powered greeting has been minted as an NFT. 🎉</div>
+            {txStatus === 'pending' && (
+              <div className="mb-2 text-yellow-600 font-semibold">Transaction Pending Confirmation...</div>
+            )}
+            {txStatus === 'confirmed' && (
+              <div className="mb-2 text-green-700 font-semibold">Transaction Confirmed!</div>
+            )}
+            {txStatus === 'failed' && (
+              <div className="mb-2 text-red-600 font-semibold">Transaction Failed! Please check the explorer for details.</div>
+            )}
             {txHash && (
-              <div className="mt-4 text-xs text-gray-500 break-all">
-                <span>Transaction Hash: </span>
+              <div className="mt-4 text-xs text-gray-500 break-all flex flex-col items-center gap-2">
+                <span className="font-semibold text-gray-700">Transaction Hash:</span>
                 <a
                   href={`https://hyperion-testnet-explorer.metisdevops.link/tx/${txHash}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-festify-green underline"
+                  className="text-festify-green underline break-all"
                 >
                   {txHash}
                 </a>
+                <button
+                  onClick={handleCopyHash}
+                  className="mt-1 px-2 py-1 text-xs bg-gray-100 rounded hover:bg-gray-200 border border-gray-300"
+                >
+                  {copied ? "Copied!" : "Copy Hash"}
+                </button>
               </div>
             )}
           </DialogDescription>
@@ -153,7 +179,12 @@ const SuccessModal = ({ isOpen, onClose, greetingData, txHash }: SuccessModalPro
             <Eye className="w-4 h-4 mr-2" />
             View My Greetings
           </Button>
-          
+          <Button
+            onClick={onClose}
+            className="w-full bg-gradient-to-r from-festify-lemon-green to-festify-green text-white"
+          >
+            Create Another Greeting
+          </Button>
           <div className="grid grid-cols-2 gap-3">
             <Button 
               onClick={handleShareGreeting}

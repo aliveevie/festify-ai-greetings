@@ -28,6 +28,7 @@ const AIGreetingCreator = () => {
   const [showFailureModal, setShowFailureModal] = useState(false);
   const [txHash, setTxHash] = useState<string | null>(null);
   const [failureReason, setFailureReason] = useState<string>("");
+  const [txStatus, setTxStatus] = useState<'pending' | 'confirmed' | 'failed' | null>(null);
   // TODO: Add FailureModal for error display
   const [recipient, setRecipient] = useState("");
   const [minting, setMinting] = useState(false);
@@ -73,6 +74,8 @@ const AIGreetingCreator = () => {
 
   const handleMintNFT = async () => {
     setMintError("");
+    setTxHash(null);
+    setTxStatus(null);
     if (!isConnected) {
       setMintError("Please connect your wallet.");
       toast.error("Please connect your wallet.");
@@ -105,43 +108,49 @@ const AIGreetingCreator = () => {
       });
       if (typeof tx === 'string') {
         setTxHash(tx);
-        let confirmed = false;
-        let errorMsg = "";
-        for (let i = 0; i < 30; i++) {
-          try {
-            const receipt = await (window as any).ethereum.request({
-              method: 'eth_getTransactionReceipt',
-              params: [tx],
-            });
-            console.log('[MintNFT] Receipt poll:', receipt);
-            if (receipt && receipt.status === '0x1') {
-              confirmed = true;
-              break;
-            } else if (receipt && receipt.status === '0x0') {
-              errorMsg = 'Transaction failed on-chain.';
-              console.log('[MintNFT] Transaction failed on-chain:', receipt);
+        setTxStatus('pending');
+        setShowSuccessModal(true);
+        (async () => {
+          let confirmed = false;
+          let errorMsg = "";
+          for (let i = 0; i < 30; i++) {
+            try {
+              const receipt = await (window as any).ethereum.request({
+                method: 'eth_getTransactionReceipt',
+                params: [tx],
+              });
+              console.log('[MintNFT] Receipt poll:', receipt);
+              if (receipt && receipt.status === '0x1') {
+                confirmed = true;
+                break;
+              } else if (receipt && receipt.status === '0x0') {
+                errorMsg = 'Transaction failed on-chain.';
+                console.log('[MintNFT] Transaction failed on-chain:', receipt);
+                break;
+              }
+            } catch (e: any) {
+              console.log('[MintNFT] Error polling for receipt:', e);
+              errorMsg = e?.message || e?.toString();
               break;
             }
-          } catch (e: any) {
-            console.log('[MintNFT] Error polling for receipt:', e);
-            errorMsg = e?.message || e?.toString();
-            break;
+            await new Promise(res => setTimeout(res, 2000));
           }
-          await new Promise(res => setTimeout(res, 2000));
-        }
-        if (confirmed) {
-          setShowSuccessModal(true);
-          setStep(1);
-          setPrompt("");
-          setGreetingData(null);
-          setRecipient("");
-          toast.success("NFT minted successfully!");
-        } else {
-          console.log('[MintNFT] Transaction not confirmed:', errorMsg);
-          setFailureReason(errorMsg || "Transaction was not confirmed in time.");
-          setShowFailureModal(true);
-          setStep(3);
-        }
+          if (confirmed) {
+            setTxStatus('confirmed');
+            setStep(1);
+            setPrompt("");
+            setGreetingData(null);
+            setRecipient("");
+            toast.success("NFT minted successfully!");
+          } else if (errorMsg) {
+            setTxStatus('failed');
+            setFailureReason(errorMsg || "Transaction was not confirmed in time.");
+            setShowFailureModal(true);
+            setStep(3);
+          }
+          setMinting(false);
+        })();
+        return;
       } else {
         console.log('[MintNFT] No transaction hash returned:', tx);
         setFailureReason("No transaction hash returned.");
@@ -285,6 +294,7 @@ const AIGreetingCreator = () => {
         onClose={() => setShowSuccessModal(false)}
         greetingData={greetingData}
         txHash={txHash}
+        txStatus={txStatus}
       />
       <FailureModal
         isOpen={showFailureModal}
