@@ -12,6 +12,7 @@ import { useWriteContract, useReadContract } from 'wagmi';
 import { toast } from "sonner";
 import { useEffect } from "react";
 import FestivalGreetingsArtifact from "../../artifacts/FestivalGreetings.json";
+import { pinataService } from "@/lib/pinata";
 
 const CONTRACT_ADDRESS = "0xD9BF55E8bC7642AE6931A94ac361559C2F34298e";
 const CONTRACT_ABI = FestivalGreetingsArtifact.abi;
@@ -41,6 +42,12 @@ const AIGreetingCreator = () => {
   const { writeContractAsync } = useWriteContract();
 
   const handleGenerateGreeting = async () => {
+    // Check if wallet is connected first
+    if (!isConnected) {
+      toast.error("Please connect your wallet first to create a greeting.");
+      return;
+    }
+    
     if (!prompt.trim()) return;
     setIsGenerating(true);
     setStep(2);
@@ -101,8 +108,26 @@ const AIGreetingCreator = () => {
     setMinting(true);
     setStep(4);
     try {
-      // Prepare metadataURI
-      const metadataURI = greetingData.metadataURI || "ipfs://placeholder";
+      // Upload the greeting image to Pinata
+      console.log('[MintNFT] Starting Pinata upload...');
+      
+      // Generate and upload the greeting image with selected design
+      const imageUrl = await pinataService.generateAndUploadGreetingImage(
+        greetingData,
+        selectedDesign
+      );
+      
+      console.log('[MintNFT] Image uploaded to Pinata:', imageUrl);
+      
+      // Create and upload metadata with the image URL
+      const metadataURI = await pinataService.createAndUploadMetadata(
+        greetingData,
+        selectedDesign,
+        imageUrl
+      );
+      
+      console.log('[MintNFT] Metadata uploaded to Pinata:', metadataURI);
+      
       console.log('[MintNFT] Attempting to mint:', { recipient, metadataURI, address });
       const tx = await writeContractAsync({
         address: CONTRACT_ADDRESS,
@@ -212,6 +237,25 @@ const AIGreetingCreator = () => {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
+              {!isConnected && (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+                  <div className="flex items-center">
+                    <div className="flex-shrink-0">
+                      <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <div className="ml-3">
+                      <h3 className="text-sm font-medium text-yellow-800">
+                        Wallet Not Connected
+                      </h3>
+                      <div className="mt-2 text-sm text-yellow-700">
+                        <p>Please connect your wallet to create and mint AI-powered greetings.</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
               <div>
                 <label className="block text-sm font-medium mb-2">Tell our AI agent what kind of greeting you want to create:</label>
                 <Textarea
@@ -219,15 +263,16 @@ const AIGreetingCreator = () => {
                   onChange={(e) => setPrompt(e.target.value)}
                   placeholder="Example: Create a Diwali greeting for my grandmother who lives in Mumbai. She loves traditional sweets and always lights diyas. Make it warm and personal with golden colors and include blessings for health and happiness."
                   className="min-h-32"
+                  disabled={!isConnected}
                 />
               </div>
               <Button 
                 onClick={handleGenerateGreeting}
-                disabled={!prompt.trim() || isGenerating}
+                disabled={!isConnected || !prompt.trim() || isGenerating}
                 className="w-full bg-gradient-to-r from-festify-lemon-green to-festify-green hover:from-festify-green hover:to-festify-apple-green text-white py-3 text-lg"
               >
                 <Sparkles className="w-5 h-5 mr-2" />
-                Generate with AI
+                {!isConnected ? "Connect Wallet First" : "Generate with AI"}
               </Button>
             </CardContent>
           </Card>
