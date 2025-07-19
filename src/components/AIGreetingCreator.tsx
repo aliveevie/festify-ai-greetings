@@ -310,6 +310,7 @@ const AIGreetingCreator = () => {
         greetingData={greetingData}
         txHash={txHash}
         txStatus={txStatus}
+        selectedDesign={selectedDesign}
       />
       <FailureModal
         isOpen={showFailureModal}

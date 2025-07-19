@@ -16,11 +16,92 @@ interface SuccessModalProps {
   greetingData: any;
   txHash?: string | null;
   txStatus?: 'pending' | 'confirmed' | 'failed' | null;
+  selectedDesign?: string;
 }
 
-const SuccessModal = ({ isOpen, onClose, greetingData, txHash, txStatus }: SuccessModalProps) => {
+const SuccessModal = ({ isOpen, onClose, greetingData, txHash, txStatus, selectedDesign }: SuccessModalProps) => {
   const navigate = useNavigate();
   const [copied, setCopied] = useState(false);
+
+  // Design options mapping (same as in GreetingPreview)
+  const designOptions = {
+    "festive-gold": {
+      gradient: ["#FCD34D", "#F97316", "#DC2626"],
+      pattern: "radial-gradient(circle at 20% 80%, rgba(255, 215, 0, 0.3) 0%, transparent 50%)"
+    },
+    "cosmic-purple": {
+      gradient: ["#8B5CF6", "#EC4899", "#4F46E5"],
+      pattern: "radial-gradient(circle at 80% 20%, rgba(147, 51, 234, 0.3) 0%, transparent 50%)"
+    },
+    "nature-green": {
+      gradient: ["#4ADE80", "#10B981", "#0D9488"],
+      pattern: "radial-gradient(circle at 50% 50%, rgba(34, 197, 94, 0.3) 0%, transparent 50%)"
+    },
+    "sunset-orange": {
+      gradient: ["#FB923C", "#DC2626", "#EC4899"],
+      pattern: "radial-gradient(circle at 30% 70%, rgba(251, 146, 60, 0.3) 0%, transparent 50%)"
+    },
+    "ocean-blue": {
+      gradient: ["#60A5FA", "#06B6D4", "#0D9488"],
+      pattern: "radial-gradient(circle at 70% 30%, rgba(59, 130, 246, 0.3) 0%, transparent 50%)"
+    },
+    "romantic-pink": {
+      gradient: ["#F472B6", "#F43F5E", "#F87171"],
+      pattern: "radial-gradient(circle at 40% 60%, rgba(236, 72, 153, 0.3) 0%, transparent 50%)"
+    },
+    "spring-floral": {
+      gradient: ["#F9A8D4", "#A855F7", "#6366F1"],
+      pattern: "radial-gradient(circle at 60% 40%, rgba(244, 114, 182, 0.3) 0%, transparent 50%)"
+    },
+    "midnight-dark": {
+      gradient: ["#374151", "#475569", "#312E81"],
+      pattern: "radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.3) 0%, transparent 50%)"
+    },
+    "electric-blue": {
+      gradient: ["#3B82F6", "#06B6D4", "#2563EB"],
+      pattern: "radial-gradient(circle at 25% 75%, rgba(59, 130, 246, 0.4) 0%, transparent 50%)"
+    },
+    "royal-purple": {
+      gradient: ["#7C3AED", "#8B5CF6", "#6D28D9"],
+      pattern: "radial-gradient(circle at 75% 25%, rgba(147, 51, 234, 0.4) 0%, transparent 50%)"
+    },
+    "crystal-clear": {
+      gradient: ["#67E8F9", "#BFDBFE", "#A5B4FC"],
+      pattern: "radial-gradient(circle at 50% 50%, rgba(34, 211, 238, 0.3) 0%, transparent 50%)"
+    },
+    "rainbow-dream": {
+      gradient: ["#F87171", "#FCD34D", "#4ADE80", "#60A5FA", "#A855F7"],
+      pattern: "radial-gradient(circle at 40% 60%, rgba(239, 68, 68, 0.2) 0%, transparent 50%)"
+    },
+    "cloudy-sky": {
+      gradient: ["#CBD5E1", "#E2E8F0", "#DBEAFE"],
+      pattern: "radial-gradient(circle at 60% 40%, rgba(148, 163, 184, 0.3) 0%, transparent 50%)"
+    },
+    "winter-frost": {
+      gradient: ["#DBEAFE", "#E0F2FE", "#FFFFFF"],
+      pattern: "radial-gradient(circle at 30% 70%, rgba(219, 234, 254, 0.4) 0%, transparent 50%)"
+    },
+    "gift-wrapped": {
+      gradient: ["#EF4444", "#F472B6", "#F43F5E"],
+      pattern: "radial-gradient(circle at 70% 30%, rgba(239, 68, 68, 0.3) 0%, transparent 50%)"
+    },
+    "target-focus": {
+      gradient: ["#F97316", "#DC2626", "#EC4899"],
+      pattern: "radial-gradient(circle at 50% 50%, rgba(249, 115, 22, 0.3) 0%, transparent 50%)"
+    },
+    "shield-protection": {
+      gradient: ["#10B981", "#14B8A6", "#06B6D4"],
+      pattern: "radial-gradient(circle at 20% 80%, rgba(16, 185, 129, 0.3) 0%, transparent 50%)"
+    },
+    "music-harmony": {
+      gradient: ["#6366F1", "#A855F7", "#EC4899"],
+      pattern: "radial-gradient(circle at 80% 20%, rgba(99, 102, 241, 0.3) 0%, transparent 50%)"
+    },
+    "golden-hour": {
+      gradient: ["#F59E0B", "#FB923C", "#FCD34D"],
+      pattern: "radial-gradient(circle at 50% 50%, rgba(251, 191, 36, 0.3) 0%, transparent 50%)"
+    }
+  };
 
   const handleViewGreeting = () => {
     // Navigate to My Greetings section
@@ -66,17 +147,21 @@ const SuccessModal = ({ isOpen, onClose, greetingData, txHash, txStatus }: Succe
     canvas.width = 800;
     canvas.height = 600;
     
-    // Create gradient background
+    // Get the selected design or default to festive-gold
+    const designId = selectedDesign || 'festive-gold';
+    const design = designOptions[designId] || designOptions['festive-gold'];
+    
+    // Create gradient background based on selected design
     const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-    gradient.addColorStop(0, '#FCD34D'); // Yellow
-    gradient.addColorStop(0.5, '#F97316'); // Orange
-    gradient.addColorStop(1, '#DC2626'); // Red
+    design.gradient.forEach((color, index) => {
+      gradient.addColorStop(index / (design.gradient.length - 1), color);
+    });
     
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
     // Add semi-transparent overlay
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
     // Add title

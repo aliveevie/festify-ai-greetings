@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Sparkles, Eye, Palette, MessageCircle, Star, Heart, Sun, Moon, Flower, Leaf, Zap, Music, Crown, Diamond, Rainbow, Cloud, Snowflake, Gift, Target, Shield } from "lucide-react";
+import { Sparkles, Eye, Palette, MessageCircle, Star, Heart, Sun, Moon, Flower, Leaf, Zap, Music, Crown, Diamond, Rainbow, Cloud, Snowflake, Gift, Target, Shield, Download } from "lucide-react";
 
 interface GreetingData {
   title: string;
@@ -217,6 +217,105 @@ const GreetingPreview = ({ greetingData, selectedDesign: propSelectedDesign, onD
     }
   };
 
+  const handleDownload = () => {
+    // Create a canvas element to generate the greeting image
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    if (!ctx) return;
+    
+    // Set canvas dimensions
+    canvas.width = 800;
+    canvas.height = 600;
+    
+    // Create gradient background based on selected design
+    const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+    const colors = selectedDesign.gradient.split(' ').filter(c => c.startsWith('from-') || c.startsWith('via-') || c.startsWith('to-'));
+    
+    // Convert Tailwind classes to hex colors
+    const colorMap: { [key: string]: string } = {
+      'from-yellow-400': '#FCD34D', 'via-orange-500': '#F97316', 'to-red-500': '#DC2626',
+      'from-purple-500': '#8B5CF6', 'via-pink-500': '#EC4899', 'to-indigo-600': '#4F46E5',
+      'from-green-400': '#4ADE80', 'via-emerald-500': '#10B981', 'to-teal-600': '#0D9488',
+      'from-orange-400': '#FB923C', 'to-pink-500': '#EC4899',
+      'from-blue-400': '#60A5FA', 'via-cyan-500': '#06B6D4',
+      'from-pink-400': '#F472B6', 'via-rose-500': '#F43F5E', 'to-red-400': '#F87171',
+      'from-pink-300': '#F9A8D4', 'via-purple-400': '#A855F7', 'to-indigo-500': '#6366F1',
+      'from-gray-800': '#374151', 'via-slate-700': '#475569', 'to-indigo-900': '#312E81',
+      'from-blue-500': '#3B82F6', 'via-cyan-400': '#06B6D4', 'to-blue-600': '#2563EB',
+      'from-purple-600': '#7C3AED', 'via-violet-500': '#8B5CF6', 'to-purple-700': '#6D28D9',
+      'from-cyan-300': '#67E8F9', 'via-blue-200': '#BFDBFE', 'to-indigo-300': '#A5B4FC',
+      'from-red-400': '#F87171', 'via-yellow-400': '#FCD34D', 'via-green-400': '#4ADE80', 'to-purple-400': '#A855F7',
+      'from-slate-300': '#CBD5E1', 'via-gray-200': '#E2E8F0', 'to-blue-100': '#DBEAFE',
+      'from-blue-100': '#DBEAFE', 'via-cyan-50': '#E0F2FE', 'to-white': '#FFFFFF',
+      'from-red-500': '#EF4444', 'via-pink-400': '#F472B6', 'to-rose-500': '#F43F5E',
+      'from-orange-500': '#F97316', 'to-pink-500': '#EC4899',
+      'from-emerald-500': '#10B981', 'via-teal-500': '#14B8A6', 'to-cyan-500': '#06B6D4',
+      'from-indigo-500': '#6366F1', 'via-purple-500': '#A855F7', 'to-pink-500': '#EC4899',
+      'from-amber-400': '#F59E0B', 'via-orange-400': '#FB923C', 'to-yellow-500': '#FCD34D'
+    };
+    
+    const hexColors = colors.map(c => colorMap[c] || '#FCD34D');
+    hexColors.forEach((color, index) => {
+      gradient.addColorStop(index / (hexColors.length - 1), color);
+    });
+    
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Add semi-transparent overlay
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Add title
+    ctx.fillStyle = 'white';
+    ctx.font = 'bold 48px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText(greetingData?.title || 'Happy Festival!', canvas.width / 2, 150);
+    
+    // Add message
+    ctx.font = '24px Arial';
+    const message = greetingData?.message || 'Wishing you joy and happiness!';
+    const words = message.split(' ');
+    let line = '';
+    let y = 250;
+    
+    for (let n = 0; n < words.length; n++) {
+      const testLine = line + words[n] + ' ';
+      const metrics = ctx.measureText(testLine);
+      const testWidth = metrics.width;
+      
+      if (testWidth > 600 && n > 0) {
+        ctx.fillText(line, canvas.width / 2, y);
+        line = words[n] + ' ';
+        y += 40;
+      } else {
+        line = testLine;
+      }
+    }
+    ctx.fillText(line, canvas.width / 2, y);
+    
+    // Add footer
+    ctx.font = '18px Arial';
+    ctx.fillText('Created with Festify', canvas.width / 2, canvas.height - 50);
+    
+    // Download the image
+    canvas.toBlob((blob) => {
+      if (blob) {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${greetingData?.title || 'greeting'}.png`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }
+    }, 'image/png');
+    
+    console.log("Downloading greeting as PNG...");
+  };
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       {/* Visual Preview */}
@@ -228,34 +327,45 @@ const GreetingPreview = ({ greetingData, selectedDesign: propSelectedDesign, onD
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div 
-            className={`aspect-square bg-gradient-to-br ${selectedDesign.gradient} rounded-xl p-8 text-white relative overflow-hidden`}
-            style={{
-              backgroundImage: `${selectedDesign.pattern}, linear-gradient(to bottom right, var(--tw-gradient-stops))`
-            }}
-          >
-            <div className="absolute inset-0 bg-black/10"></div>
-            <div className="relative z-10 h-full flex flex-col justify-between">
-              <div>
-                <h3 className="text-2xl font-bold mb-4 text-center">{greetingData.title}</h3>
-                <div className="text-center mb-6">
-                  <div className={`w-12 h-12 mx-auto mb-2 animate-pulse ${selectedDesign.accentColor}`}>
-                    {selectedDesign.icon}
+          <div className="relative">
+            <div 
+              className={`aspect-square bg-gradient-to-br ${selectedDesign.gradient} rounded-xl p-8 text-white relative overflow-hidden`}
+              style={{
+                backgroundImage: `${selectedDesign.pattern}, linear-gradient(to bottom right, var(--tw-gradient-stops))`
+              }}
+            >
+              <div className="absolute inset-0 bg-black/10"></div>
+              <div className="relative z-10 h-full flex flex-col justify-between">
+                <div>
+                  <h3 className="text-2xl font-bold mb-4 text-center">{greetingData.title}</h3>
+                  <div className="text-center mb-6">
+                    <div className={`w-12 h-12 mx-auto mb-2 animate-pulse ${selectedDesign.accentColor}`}>
+                      {selectedDesign.icon}
+                    </div>
+                  </div>
+                </div>
+                <div className="flex-1 flex items-center">
+                  <p className="text-sm leading-relaxed text-center bg-white/10 backdrop-blur-sm rounded-lg p-4 w-full">
+                    {greetingData.message}
+                  </p>
+                </div>
+                <div className="mt-4">
+                  <div className="flex justify-center">
+                    <div className="bg-white/20 backdrop-blur-sm rounded-full px-4 py-2 text-xs">
+                      💫 Tap to interact
+                    </div>
                   </div>
                 </div>
               </div>
-              <div className="flex-1 flex items-center">
-                <p className="text-sm leading-relaxed text-center bg-white/10 backdrop-blur-sm rounded-lg p-4 w-full">
-                  {greetingData.message}
-                </p>
-              </div>
-              <div className="mt-4">
-                <div className="flex justify-center">
-                  <div className="bg-white/20 backdrop-blur-sm rounded-full px-4 py-2 text-xs">
-                    💫 Tap to interact
-                  </div>
-                </div>
-              </div>
+              
+              {/* Download Button */}
+              <button
+                onClick={handleDownload}
+                className="absolute top-4 right-4 bg-white/20 backdrop-blur-sm rounded-full p-2 hover:bg-white/30 transition-all duration-200 text-white z-20"
+                title="Download as PNG"
+              >
+                <Download className="w-5 h-5" />
+              </button>
             </div>
           </div>
         </CardContent>
