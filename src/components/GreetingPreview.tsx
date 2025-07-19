@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Sparkles, Eye, Palette, MessageCircle, Star, Heart, Sun, Moon, Flower, Leaf } from "lucide-react";
+import { Sparkles, Eye, Palette, MessageCircle, Star, Heart, Sun, Moon, Flower, Leaf, Zap, Music, Crown, Diamond, Rainbow, Cloud, Snowflake, Gift, Target, Shield } from "lucide-react";
 
 interface GreetingData {
   title: string;
@@ -99,6 +99,105 @@ const designOptions: DesignOption[] = [
     pattern: "radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.3) 0%, transparent 50%)",
     accentColor: "text-indigo-300",
     description: "Elegant dark theme with subtle highlights"
+  },
+  {
+    id: "electric-blue",
+    name: "Electric Blue",
+    icon: <Zap className="w-6 h-6" />,
+    gradient: "from-blue-500 via-cyan-400 to-blue-600",
+    pattern: "radial-gradient(circle at 25% 75%, rgba(59, 130, 246, 0.4) 0%, transparent 50%)",
+    accentColor: "text-cyan-300",
+    description: "Dynamic electric blue with lightning effects"
+  },
+  {
+    id: "royal-purple",
+    name: "Royal Purple",
+    icon: <Crown className="w-6 h-6" />,
+    gradient: "from-purple-600 via-violet-500 to-purple-700",
+    pattern: "radial-gradient(circle at 75% 25%, rgba(147, 51, 234, 0.4) 0%, transparent 50%)",
+    accentColor: "text-violet-300",
+    description: "Regal purple with royal elegance"
+  },
+  {
+    id: "crystal-clear",
+    name: "Crystal Clear",
+    icon: <Diamond className="w-6 h-6" />,
+    gradient: "from-cyan-300 via-blue-200 to-indigo-300",
+    pattern: "radial-gradient(circle at 50% 50%, rgba(34, 211, 238, 0.3) 0%, transparent 50%)",
+    accentColor: "text-cyan-200",
+    description: "Crystal clear with diamond sparkles"
+  },
+  {
+    id: "rainbow-dream",
+    name: "Rainbow Dream",
+    icon: <Rainbow className="w-6 h-6" />,
+    gradient: "from-red-400 via-yellow-400 via-green-400 via-blue-400 to-purple-400",
+    pattern: "radial-gradient(circle at 40% 60%, rgba(239, 68, 68, 0.2) 0%, transparent 50%)",
+    accentColor: "text-yellow-300",
+    description: "Vibrant rainbow colors with dreamy effects"
+  },
+  {
+    id: "cloudy-sky",
+    name: "Cloudy Sky",
+    icon: <Cloud className="w-6 h-6" />,
+    gradient: "from-slate-300 via-gray-200 to-blue-100",
+    pattern: "radial-gradient(circle at 60% 40%, rgba(148, 163, 184, 0.3) 0%, transparent 50%)",
+    accentColor: "text-slate-400",
+    description: "Soft cloudy sky with gentle tones"
+  },
+  {
+    id: "winter-frost",
+    name: "Winter Frost",
+    icon: <Snowflake className="w-6 h-6" />,
+    gradient: "from-blue-100 via-cyan-50 to-white",
+    pattern: "radial-gradient(circle at 30% 70%, rgba(219, 234, 254, 0.4) 0%, transparent 50%)",
+    accentColor: "text-blue-200",
+    description: "Crisp winter frost with icy sparkles"
+  },
+  {
+    id: "gift-wrapped",
+    name: "Gift Wrapped",
+    icon: <Gift className="w-6 h-6" />,
+    gradient: "from-red-500 via-pink-400 to-rose-500",
+    pattern: "radial-gradient(circle at 70% 30%, rgba(239, 68, 68, 0.3) 0%, transparent 50%)",
+    accentColor: "text-red-300",
+    description: "Festive gift-wrapped with ribbon patterns"
+  },
+  {
+    id: "target-focus",
+    name: "Target Focus",
+    icon: <Target className="w-6 h-6" />,
+    gradient: "from-orange-500 via-red-500 to-pink-500",
+    pattern: "radial-gradient(circle at 50% 50%, rgba(249, 115, 22, 0.3) 0%, transparent 50%)",
+    accentColor: "text-orange-300",
+    description: "Focused target with concentric circles"
+  },
+  {
+    id: "shield-protection",
+    name: "Shield Protection",
+    icon: <Shield className="w-6 h-6" />,
+    gradient: "from-emerald-500 via-teal-500 to-cyan-500",
+    pattern: "radial-gradient(circle at 20% 80%, rgba(16, 185, 129, 0.3) 0%, transparent 50%)",
+    accentColor: "text-emerald-300",
+    description: "Protective shield with security elements"
+  },
+  {
+    id: "music-harmony",
+    name: "Music Harmony",
+    icon: <Music className="w-6 h-6" />,
+    gradient: "from-indigo-500 via-purple-500 to-pink-500",
+    pattern: "radial-gradient(circle at 80% 20%, rgba(99, 102, 241, 0.3) 0%, transparent 50%)",
+    accentColor: "text-indigo-300",
+    description: "Musical harmony with rhythmic patterns"
+  },
+  {
+    id: "golden-hour",
+    name: "Golden Hour",
+    icon: <Sun className="w-6 h-6" />,
+    gradient: "from-amber-400 via-orange-400 to-yellow-500",
+    pattern: "radial-gradient(circle at 50% 50%, rgba(251, 191, 36, 0.3) 0%, transparent 50%)",
+    accentColor: "text-amber-300",
+    description: "Warm golden hour with sunset glow"
   }
 ];
 
