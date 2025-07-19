@@ -6,9 +6,10 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, Download, Share2, Eye } from "lucide-react";
+import { CheckCircle, Download, Share2, Eye, Twitter, MessageCircle, Copy, ChevronDown } from "lucide-react";
+import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 
 interface SuccessModalProps {
   isOpen: boolean;
@@ -22,6 +23,25 @@ interface SuccessModalProps {
 const SuccessModal = ({ isOpen, onClose, greetingData, txHash, txStatus, selectedDesign }: SuccessModalProps) => {
   const navigate = useNavigate();
   const [copied, setCopied] = useState(false);
+  const [showShareOptions, setShowShareOptions] = useState(false);
+  const shareOptionsRef = useRef<HTMLDivElement>(null);
+
+  // Close share options when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (shareOptionsRef.current && !shareOptionsRef.current.contains(event.target as Node)) {
+        setShowShareOptions(false);
+      }
+    };
+
+    if (showShareOptions) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showShareOptions]);
 
   // Design options mapping (same as in GreetingPreview)
   const designOptions = {
@@ -118,22 +138,42 @@ const SuccessModal = ({ isOpen, onClose, greetingData, txHash, txStatus, selecte
   };
 
   const handleShareGreeting = async () => {
-    try {
-      if (navigator.share) {
-        await navigator.share({
-          title: greetingData?.title || "AI-Powered Greeting",
-          text: `Check out this beautiful greeting I created with Festify: ${greetingData?.message}`,
-          url: window.location.origin
-        });
-      } else {
-        // Fallback for browsers that don't support Web Share API
-        const shareText = `Check out this beautiful greeting I created with Festify: ${greetingData?.title}\n\n${greetingData?.message}\n\nCreate yours at ${window.location.origin}`;
-        await navigator.clipboard.writeText(shareText);
-        console.log("Greeting details copied to clipboard!");
-      }
-    } catch (error) {
-      console.error("Error sharing greeting:", error);
-    }
+    setShowShareOptions(!showShareOptions);
+  };
+
+  const shareToX = () => {
+    const message = greetingData?.message || "Wishing you joy and happiness!";
+    const text = `🎉 Just created a beautiful AI-powered greeting with Festify!\n\n${message}\n\n✨ Create your own at: https://festify-ai.vercel.app/`;
+    const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
+    window.open(url, '_blank');
+    setShowShareOptions(false);
+  };
+
+  const shareToTelegram = () => {
+    const message = greetingData?.message || "Wishing you joy and happiness!";
+    const text = `🎉 Just created a beautiful AI-powered greeting with Festify!\n\n${message}\n\n✨ Create your own at: https://festify-ai.vercel.app/`;
+    const url = `https://t.me/share/url?url=${encodeURIComponent('https://festify-ai.vercel.app/')}&text=${encodeURIComponent(text)}`;
+    window.open(url, '_blank');
+    setShowShareOptions(false);
+  };
+
+  const shareToHyperionForum = () => {
+    const message = greetingData?.message || "Wishing you joy and happiness!";
+    const text = `🎉 Just created a beautiful AI-powered greeting with Festify!\n\n${message}\n\n✨ Create your own at: https://festify-ai.vercel.app/`;
+    const url = `https://forum.ceg.vote/invites/SzmGCxb8bs`;
+    // For forum sharing, we'll open the forum and copy text to clipboard
+    window.open(url, '_blank');
+    navigator.clipboard.writeText(text);
+    toast.success("Text copied! Paste it in the Hyperion forum.");
+    setShowShareOptions(false);
+  };
+
+  const copyToClipboard = async () => {
+    const message = greetingData?.message || "Wishing you joy and happiness!";
+    const shareText = `🎉 Just created a beautiful AI-powered greeting with Festify!\n\n${message}\n\n✨ Create your own at: https://festify-ai.vercel.app/`;
+    await navigator.clipboard.writeText(shareText);
+    toast.success("Greeting copied to clipboard!");
+    setShowShareOptions(false);
   };
 
   const handleDownload = () => {
@@ -270,20 +310,62 @@ const SuccessModal = ({ isOpen, onClose, greetingData, txHash, txStatus, selecte
           >
             Create Another Greeting
           </Button>
-          <div className="grid grid-cols-2 gap-3">
-            <Button 
-              onClick={handleShareGreeting}
-              variant="outline"
-              className="border-festify-green text-festify-green hover:bg-festify-green hover:text-white"
-            >
-              <Share2 className="w-4 h-4 mr-2" />
-              Share
-            </Button>
+          <div className="space-y-3">
+            {/* Share Button with Dropdown */}
+            <div className="relative" ref={shareOptionsRef}>
+              <Button 
+                onClick={handleShareGreeting}
+                variant="outline"
+                className="w-full border-festify-green text-festify-green hover:bg-festify-green hover:text-white"
+              >
+                <Share2 className="w-4 h-4 mr-2" />
+                Share
+                <ChevronDown className={`w-4 h-4 ml-2 transition-transform ${showShareOptions ? 'rotate-180' : ''}`} />
+              </Button>
+              
+              {showShareOptions && (
+                <div className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+                  <div className="p-2 space-y-1">
+                    <div className="text-xs font-semibold text-gray-500 px-2 py-1 border-b border-gray-100">
+                      Share your greeting:
+                    </div>
+                    <button
+                      onClick={shareToX}
+                      className="w-full flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
+                    >
+                      <Twitter className="w-4 h-4 mr-2 text-blue-500" />
+                      Share on X (Twitter)
+                    </button>
+                    <button
+                      onClick={shareToTelegram}
+                      className="w-full flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
+                    >
+                      <MessageCircle className="w-4 h-4 mr-2 text-blue-400" />
+                      Share on Telegram
+                    </button>
+                    <button
+                      onClick={shareToHyperionForum}
+                      className="w-full flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
+                    >
+                      <MessageCircle className="w-4 h-4 mr-2 text-purple-500" />
+                      Share on Hyperion Forum
+                    </button>
+                    <button
+                      onClick={copyToClipboard}
+                      className="w-full flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
+                    >
+                      <Copy className="w-4 h-4 mr-2 text-gray-500" />
+                      Copy to Clipboard
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
             
             <Button 
               onClick={handleDownload}
               variant="outline"
-              className="border-festify-light-blue text-festify-light-blue hover:bg-festify-light-blue hover:text-white"
+              className="w-full border-festify-light-blue text-festify-light-blue hover:bg-festify-light-blue hover:text-white"
             >
               <Download className="w-4 h-4 mr-2" />
               Download PNG
