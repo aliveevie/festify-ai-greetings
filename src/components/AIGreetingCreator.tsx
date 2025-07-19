@@ -33,6 +33,7 @@ const AIGreetingCreator = () => {
   const [recipient, setRecipient] = useState("");
   const [minting, setMinting] = useState(false);
   const [mintError, setMintError] = useState("");
+  const [selectedDesign, setSelectedDesign] = useState("festive-gold");
 
   const { address, isConnected } = useAccount();
 
@@ -91,6 +92,12 @@ const AIGreetingCreator = () => {
       toast.error("No greeting data to mint.");
       return;
     }
+    
+    // Add selected design to the greeting data
+    const enhancedGreetingData = {
+      ...greetingData,
+      selectedDesign: selectedDesign
+    };
     setMinting(true);
     setStep(4);
     try {
@@ -141,6 +148,7 @@ const AIGreetingCreator = () => {
             setPrompt("");
             setGreetingData(null);
             setRecipient("");
+            setSelectedDesign("festive-gold");
             toast.success("NFT minted successfully!");
           } else if (errorMsg) {
             setTxStatus('failed');
@@ -236,7 +244,11 @@ const AIGreetingCreator = () => {
         {/* Step 3: Preview & Customize */}
         {step === 3 && greetingData && (
           <div className="space-y-6">
-            <GreetingPreview greetingData={greetingData} />
+            <GreetingPreview 
+              greetingData={greetingData} 
+              selectedDesign={selectedDesign}
+              onDesignChange={setSelectedDesign}
+            />
             <div className="flex flex-col gap-4 items-center">
               <div className="w-full max-w-md">
                 <label className="block text-sm font-medium mb-2">Recipient Wallet Address</label>
@@ -253,7 +265,10 @@ const AIGreetingCreator = () => {
               <div className="flex gap-4 justify-center">
                 <Button 
                   variant="outline"
-                  onClick={() => setStep(1)}
+                  onClick={() => {
+                    setStep(1);
+                    setSelectedDesign("festive-gold");
+                  }}
                   className="px-6 py-3"
                   disabled={minting}
                 >

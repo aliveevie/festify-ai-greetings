@@ -112,3 +112,64 @@ All colors MUST be HSL.
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.18);
 }
+
+/* Festify Design System Colors */
+.text-festify-green {
+  color: #22c55e;
+}
+
+.text-festify-lemon-green {
+  color: #84cc16;
+}
+
+.text-festify-apple-green {
+  color: #16a34a;
+}
+
+.text-festify-lemon-orange {
+  color: #f59e0b;
+}
+
+.text-festify-light-blue {
+  color: #3b82f6;
+}
+
+.bg-festify-green {
+  background-color: #22c55e;
+}
+
+.bg-festify-lemon-green {
+  background-color: #84cc16;
+}
+
+.bg-festify-apple-green {
+  background-color: #16a34a;
+}
+
+.bg-festify-lemon-orange {
+  background-color: #f59e0b;
+}
+
+.bg-festify-light-blue {
+  background-color: #3b82f6;
+}
+
+.border-festify-green {
+  border-color: #22c55e;
+}
+
+.border-festify-lemon-green {
+  border-color: #84cc16;
+}
+
+.border-festify-apple-green {
+  border-color: #16a34a;
+}
+
+.border-festify-lemon-orange {
+  border-color: #f59e0b;
+}
+
+.border-festify-light-blue {
+  border-color: #3b82f6;
+}
