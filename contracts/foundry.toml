@@ -2,5 +2,10 @@
 src = "src"
 out = "artifacts"
 libs = ["node_modules", "lib"]
+solc = "0.8.28"
+
+# Metis Hyperion Testnet Configuration
+[rpc_endpoints]
+metis-testnet = "https://hyperion-testnet.metisdevops.link"
 
 # See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options

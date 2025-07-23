@@ -2,17 +2,18 @@
 pragma solidity ^0.8.13;
 
 import {Script, console} from "forge-std/Script.sol";
-import {Counter} from "../src/Counter.sol";
+import {Festify} from "../src/Festify.sol";
 
-contract CounterScript is Script {
-    Counter public counter;
+contract FestifyScript is Script {
+    Festify public festify;
 
     function setUp() public {}
 
     function run() public {
         vm.startBroadcast();
 
-        counter = new Counter();
+        festify = new Festify();
+        console.log("Festify deployed at:", address(festify));
 
         vm.stopBroadcast();
     }
