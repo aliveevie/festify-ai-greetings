@@ -37,6 +37,8 @@ const AIGreetingCreator = () => {
   const [mintError, setMintError] = useState("");
   const [selectedDesign, setSelectedDesign] = useState("festive-gold");
   const [currentGreetingId, setCurrentGreetingId] = useState<string | null>(null);
+  const [isEditingMessage, setIsEditingMessage] = useState(false);
+  const [editedMessage, setEditedMessage] = useState("");
 
   const { address, isConnected } = useAccount();
 
@@ -52,6 +54,31 @@ const AIGreetingCreator = () => {
     if (greetingData?.festival) return greetingData.festival;
     if (greetingData?.occasion) return greetingData.occasion;
     return "Festival";
+  };
+
+  // Handle editing the generated message
+  const handleEditMessage = () => {
+    setEditedMessage(greetingData?.message || greetingData?.greeting || "");
+    setIsEditingMessage(true);
+  };
+
+  const handleSaveEdit = () => {
+    if (editedMessage.trim()) {
+      setGreetingData({
+        ...greetingData,
+        message: editedMessage.trim(),
+        greeting: editedMessage.trim() // Update both fields for compatibility
+      });
+      setIsEditingMessage(false);
+      toast.success("Message updated successfully!");
+    } else {
+      toast.error("Message cannot be empty.");
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditedMessage("");
+    setIsEditingMessage(false);
   };
 
   // Write contract for minting
@@ -220,6 +247,8 @@ const AIGreetingCreator = () => {
             setRecipient("");
             setSelectedDesign("festive-gold");
             setCurrentGreetingId(null);
+            setIsEditingMessage(false);
+            setEditedMessage("");
             toast.success("NFT minted successfully!");
           } else if (errorMsg) {
             setTxStatus('failed');
@@ -343,6 +372,59 @@ const AIGreetingCreator = () => {
               selectedDesign={selectedDesign}
               onDesignChange={setSelectedDesign}
             />
+            
+            {/* Edit Message Section */}
+            <Card className="glass-effect border-none shadow-lg">
+              <CardHeader>
+                <CardTitle className="text-xl flex items-center justify-between">
+                  <span>Generated Message</span>
+                  {!isEditingMessage && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleEditMessage}
+                      className="border-festify-green text-festify-green hover:bg-festify-green hover:text-white"
+                    >
+                      Edit Message
+                    </Button>
+                  )}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {isEditingMessage ? (
+                  <div className="space-y-4">
+                    <Textarea
+                      value={editedMessage}
+                      onChange={(e) => setEditedMessage(e.target.value)}
+                      placeholder="Edit your greeting message..."
+                      className="min-h-32"
+                      disabled={minting}
+                    />
+                    <div className="flex gap-3 justify-end">
+                      <Button
+                        variant="outline"
+                        onClick={handleCancelEdit}
+                        disabled={minting}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        onClick={handleSaveEdit}
+                        className="bg-festify-green hover:bg-festify-apple-green text-white"
+                        disabled={minting || !editedMessage.trim()}
+                      >
+                        Save Changes
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="bg-gray-50 rounded-lg p-4 text-gray-700">
+                    <p className="italic">"{greetingData?.message || greetingData?.greeting || "No message available"}"</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+            
             <div className="flex flex-col gap-4 items-center">
               <div className="w-full max-w-md">
                 <label className="block text-sm font-medium mb-2">Recipient Wallet Address</label>
@@ -362,6 +444,8 @@ const AIGreetingCreator = () => {
                   onClick={() => {
                     setStep(1);
                     setSelectedDesign("festive-gold");
+                    setIsEditingMessage(false);
+                    setEditedMessage("");
                   }}
                   className="px-6 py-3"
                   disabled={minting}
