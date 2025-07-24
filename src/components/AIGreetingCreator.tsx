@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { useEffect } from "react";
 import FestivalGreetingsArtifact from "../../artifacts/FestivalGreetings.json";
 import { pinataService } from "@/lib/pinata";
+import { storageService, UserGreeting } from "@/lib/storage";
 
 const CONTRACT_ADDRESS = "0xD9BF55E8bC7642AE6931A94ac361559C2F34298e";
 const CONTRACT_ABI = FestivalGreetingsArtifact.abi;
@@ -35,8 +36,23 @@ const AIGreetingCreator = () => {
   const [minting, setMinting] = useState(false);
   const [mintError, setMintError] = useState("");
   const [selectedDesign, setSelectedDesign] = useState("festive-gold");
+  const [currentGreetingId, setCurrentGreetingId] = useState<string | null>(null);
 
   const { address, isConnected } = useAccount();
+
+  // Helper function to generate greeting title from AI response
+  const generateGreetingTitle = (greetingData: any): string => {
+    if (greetingData?.title) return greetingData.title;
+    if (greetingData?.festival) return `${greetingData.festival} Greeting`;
+    return `Festival Greeting ${new Date().getFullYear()}`;
+  };
+
+  // Helper function to extract festival type from greeting data
+  const extractFestivalType = (greetingData: any): string => {
+    if (greetingData?.festival) return greetingData.festival;
+    if (greetingData?.occasion) return greetingData.occasion;
+    return "Festival";
+  };
 
   // Write contract for minting
   const { writeContractAsync } = useWriteContract();
@@ -107,6 +123,11 @@ const AIGreetingCreator = () => {
     };
     setMinting(true);
     setStep(4);
+    
+    // Generate unique ID for this greeting
+    const greetingId = `greeting_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    setCurrentGreetingId(greetingId);
+    
     try {
       // Upload the greeting image to Pinata
       console.log('[MintNFT] Starting Pinata upload...');
@@ -142,6 +163,27 @@ const AIGreetingCreator = () => {
         setTxHash(tx);
         setTxStatus('pending');
         setShowSuccessModal(true);
+        
+        // Save greeting to storage with pending status
+        const newGreeting: UserGreeting = {
+          id: greetingId,
+          title: generateGreetingTitle(greetingData),
+          message: greetingData?.message || greetingData?.greeting || "AI-generated festival greeting",
+          recipient: recipient,
+          date: new Date().toISOString().split('T')[0],
+          type: extractFestivalType(greetingData),
+          status: 'pending',
+          txHash: tx,
+          metadataURI: metadataURI,
+          imageUrl: imageUrl,
+          selectedDesign: selectedDesign,
+          userAddress: address!,
+          greetingData: greetingData
+        };
+        
+        storageService.saveGreeting(newGreeting);
+        console.log('[MintNFT] Greeting saved to storage:', newGreeting);
+        
         (async () => {
           let confirmed = false;
           let errorMsg = "";
@@ -169,14 +211,21 @@ const AIGreetingCreator = () => {
           }
           if (confirmed) {
             setTxStatus('confirmed');
+            // Update greeting status to sent
+            storageService.updateGreetingStatus(greetingId, 'sent', tx);
+            console.log('[MintNFT] Greeting status updated to sent');
             setStep(1);
             setPrompt("");
             setGreetingData(null);
             setRecipient("");
             setSelectedDesign("festive-gold");
+            setCurrentGreetingId(null);
             toast.success("NFT minted successfully!");
           } else if (errorMsg) {
             setTxStatus('failed');
+            // Update greeting status to failed
+            storageService.updateGreetingStatus(greetingId, 'failed', tx);
+            console.log('[MintNFT] Greeting status updated to failed');
             setFailureReason(errorMsg || "Transaction was not confirmed in time.");
             setShowFailureModal(true);
             setStep(3);

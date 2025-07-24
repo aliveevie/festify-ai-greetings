@@ -1,5 +1,5 @@
 
-import { Heart, Twitter, Github, MessageCircle } from "lucide-react";
+import { Heart, Twitter, Github, MessageCircle, Users } from "lucide-react";
 
 const Footer = () => {
   return (
@@ -26,7 +26,7 @@ const Footer = () => {
             <ul className="space-y-2 text-gray-300">
               <li><a href="#features" className="hover:text-festify-lemon-green transition-colors">Features</a></li>
               <li><a href="#create" className="hover:text-festify-lemon-green transition-colors">Create</a></li>
-              <li><a href="#community" className="hover:text-festify-lemon-green transition-colors">Community</a></li>
+              <li><a href="https://forum.ceg.vote/invites/ucYasjVpPr" target="_blank" rel="noopener noreferrer" className="hover:text-festify-lemon-green transition-colors">Community</a></li>
               <li><a href="#" className="hover:text-festify-lemon-green transition-colors">Marketplace</a></li>
             </ul>
           </div>
@@ -34,14 +34,32 @@ const Footer = () => {
           <div>
             <h4 className="text-lg font-semibold mb-4">Connect</h4>
             <div className="flex space-x-4">
-              <a href="#" className="p-2 bg-gray-700 rounded-full hover:bg-festify-green transition-colors">
+              <a 
+                href="https://x.com/festify_ai" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="p-2 bg-gray-700 rounded-full hover:bg-festify-green transition-colors"
+                title="Follow us on X"
+              >
                 <Twitter className="w-5 h-5" />
               </a>
-              <a href="#" className="p-2 bg-gray-700 rounded-full hover:bg-festify-green transition-colors">
-                <Github className="w-5 h-5" />
-              </a>
-              <a href="#" className="p-2 bg-gray-700 rounded-full hover:bg-festify-green transition-colors">
+              <a 
+                href="https://t.me/festify_chat" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="p-2 bg-gray-700 rounded-full hover:bg-festify-green transition-colors"
+                title="Join our Telegram"
+              >
                 <MessageCircle className="w-5 h-5" />
+              </a>
+              <a 
+                href="https://forum.ceg.vote/invites/ucYasjVpPr" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="p-2 bg-gray-700 rounded-full hover:bg-festify-green transition-colors"
+                title="Join our Forum"
+              >
+                <Users className="w-5 h-5" />
               </a>
             </div>
           </div>

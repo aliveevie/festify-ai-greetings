@@ -5,7 +5,16 @@ const Header = () => {
   const navigate = useNavigate();
 
   const handleMyGreetingsClick = () => {
-    navigate("/#my-greetings");
+    // Navigate to home page first, then scroll to my-greetings section
+    navigate("/");
+    
+    // Use a timeout to ensure navigation completes before scrolling
+    setTimeout(() => {
+      const element = document.getElementById('my-greetings');
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 100);
   };
 
   return (

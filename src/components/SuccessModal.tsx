@@ -124,9 +124,17 @@ const SuccessModal = ({ isOpen, onClose, greetingData, txHash, txStatus, selecte
   };
 
   const handleViewGreeting = () => {
-    // Navigate to My Greetings section
-    navigate("/#my-greetings");
+    // Navigate to home page first, then scroll to my-greetings section
+    navigate("/");
     onClose();
+    
+    // Use a timeout to ensure navigation completes before scrolling
+    setTimeout(() => {
+      const element = document.getElementById('my-greetings');
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 100);
   };
 
   const handleCopyHash = async () => {
