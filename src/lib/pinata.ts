@@ -75,7 +75,8 @@ export class PinataService {
       }
 
       const data: PinataResponse = await response.json();
-      return `ipfs://${data.IpfsHash}`;
+      // Return HTTP gateway URL for better compatibility with explorers and marketplaces
+      return `${this.gatewayUrl}/ipfs/${data.IpfsHash}`;
     } catch (error) {
       console.error('Error uploading metadata to Pinata:', error);
       throw new Error(`Failed to upload metadata: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -177,28 +178,47 @@ export class PinataService {
     imageUrl: string
   ): Promise<string> {
     try {
+      const festivalType = greetingData?.festival || greetingData?.occasion || 'Festival';
+      const currentDate = new Date().toISOString().split('T')[0];
+      
       const metadata: Metadata = {
-        name: greetingData?.title || 'Festify Greeting',
-        description: greetingData?.message || 'A beautiful AI-powered festival greeting created with Festify',
+        name: greetingData?.title || `${festivalType} Greeting`,
+        description: `${greetingData?.message || 'A beautiful AI-powered festival greeting created with Festify'}\n\nCreated on: ${currentDate}\nDesign: ${selectedDesign.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}`,
         image: imageUrl,
         attributes: [
           {
-            trait_type: 'Design Theme',
-            value: selectedDesign
+            trait_type: 'Festival Type',
+            value: festivalType
           },
           {
-            trait_type: 'Creator',
+            trait_type: 'Design Theme',
+            value: selectedDesign.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())
+          },
+          {
+            trait_type: 'Creator Platform',
             value: 'Festify AI'
           },
           {
+            trait_type: 'Creation Date',
+            value: currentDate
+          },
+          {
             trait_type: 'Type',
-            value: 'Festival Greeting'
+            value: 'AI-Generated Greeting NFT'
+          },
+          {
+            trait_type: 'Blockchain',
+            value: 'Hyperion'
           }
         ],
         external_url: 'https://festify-ai.vercel.app/'
       };
 
-      return await this.uploadMetadata(metadata);
+      console.log('Creating metadata:', JSON.stringify(metadata, null, 2));
+      const metadataURI = await this.uploadMetadata(metadata);
+      console.log('Metadata uploaded successfully:', metadataURI);
+      
+      return metadataURI;
     } catch (error) {
       console.error('Error creating and uploading metadata:', error);
       throw error;
@@ -230,6 +250,33 @@ export class PinataService {
     };
 
     return designColors[selectedDesign] || designColors["festive-gold"];
+  }
+
+  // Utility function to verify metadata accessibility
+  async verifyMetadataAccess(metadataURI: string): Promise<boolean> {
+    try {
+      const response = await fetch(metadataURI);
+      if (response.ok) {
+        const metadata = await response.json();
+        console.log('Metadata verification successful:', metadata);
+        return true;
+      } else {
+        console.error('Metadata verification failed:', response.status, response.statusText);
+        return false;
+      }
+    } catch (error) {
+      console.error('Error verifying metadata access:', error);
+      return false;
+    }
+  }
+
+  // Debug function to get both IPFS and HTTP URLs
+  getMultipleFormatURLs(ipfsHash: string): { ipfs: string; http: string; gateway: string } {
+    return {
+      ipfs: `ipfs://${ipfsHash}`,
+      http: `${this.gatewayUrl}/ipfs/${ipfsHash}`,
+      gateway: `https://gateway.pinata.cloud/ipfs/${ipfsHash}`
+    };
   }
 }
 

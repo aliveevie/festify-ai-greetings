@@ -176,6 +176,17 @@ const AIGreetingCreator = () => {
       
       console.log('[MintNFT] Metadata uploaded to Pinata:', metadataURI);
       
+      // Verify metadata accessibility
+      try {
+        const isAccessible = await pinataService.verifyMetadataAccess(metadataURI);
+        console.log('[MintNFT] Metadata accessibility check:', isAccessible);
+        if (!isAccessible) {
+          console.warn('[MintNFT] Warning: Metadata may not be accessible via HTTP');
+        }
+      } catch (verifyError) {
+        console.warn('[MintNFT] Could not verify metadata accessibility:', verifyError);
+      }
+      
       console.log('[MintNFT] Attempting to mint:', { recipient, metadataURI, address });
       const tx = await writeContractAsync({
         address: CONTRACT_ADDRESS,
