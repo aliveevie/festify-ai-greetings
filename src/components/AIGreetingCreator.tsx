@@ -8,7 +8,7 @@ import GreetingPreview from "./GreetingPreview";
 import SuccessModal from "./SuccessModal";
 import FailureModal from "./FailureModal";
 import { useAccount } from 'wagmi';
-import { useWriteContract, useReadContract } from 'wagmi';
+import { useWriteContract, useReadContract, useWaitForTransactionReceipt } from 'wagmi';
 import { toast } from "sonner";
 import { useEffect } from "react";
 import FestivalGreetingsArtifact from "../../artifacts/FestivalGreetings.json";
@@ -83,6 +83,62 @@ const AIGreetingCreator = () => {
 
   // Write contract for minting
   const { writeContractAsync } = useWriteContract();
+  
+  // Wait for transaction receipt - this works better on mobile
+  const { 
+    data: transactionReceipt, 
+    isLoading: isWaitingForReceipt, 
+    isError: isReceiptError,
+    error: receiptError
+  } = useWaitForTransactionReceipt({
+    hash: txHash as `0x${string}`,
+    enabled: !!txHash && txStatus === 'pending',
+  });
+
+  // Handle transaction receipt changes - works better on mobile than manual polling
+  useEffect(() => {
+    if (transactionReceipt && txStatus === 'pending' && currentGreetingId) {
+      console.log('[MintNFT] Transaction confirmed:', transactionReceipt);
+      setTxStatus('confirmed');
+      setMinting(false);
+      
+      // Update greeting status to sent
+      storageService.updateGreetingStatus(currentGreetingId, 'sent', txHash!);
+      console.log('[MintNFT] Greeting status updated to sent');
+      
+      // Reset form state
+      setStep(1);
+      setPrompt("");
+      setGreetingData(null);
+      setRecipient("");
+      setSelectedDesign("festive-gold");
+      setCurrentGreetingId(null);
+      setIsEditingMessage(false);
+      setEditedMessage("");
+      
+      toast.success("NFT minted successfully!");
+    }
+  }, [transactionReceipt, txStatus, currentGreetingId, txHash]);
+
+  // Handle transaction receipt errors - better mobile error handling
+  useEffect(() => {
+    if (isReceiptError && receiptError && txStatus === 'pending' && currentGreetingId) {
+      console.log('[MintNFT] Transaction receipt error:', receiptError);
+      setTxStatus('failed');
+      setMinting(false);
+      
+      // Update greeting status to failed
+      storageService.updateGreetingStatus(currentGreetingId, 'failed', txHash!);
+      console.log('[MintNFT] Greeting status updated to failed');
+      
+      const errorMessage = receiptError?.message || "Transaction failed to confirm";
+      setFailureReason(errorMessage);
+      setShowFailureModal(true);
+      setStep(3);
+      
+      toast.error("Transaction failed");
+    }
+  }, [isReceiptError, receiptError, txStatus, currentGreetingId, txHash]);
 
   const handleGenerateGreeting = async () => {
     // Check if wallet is connected first
@@ -222,56 +278,8 @@ const AIGreetingCreator = () => {
         storageService.saveGreeting(newGreeting);
         console.log('[MintNFT] Greeting saved to storage:', newGreeting);
         
-        (async () => {
-          let confirmed = false;
-          let errorMsg = "";
-          for (let i = 0; i < 30; i++) {
-            try {
-              const receipt = await (window as any).ethereum.request({
-                method: 'eth_getTransactionReceipt',
-                params: [tx],
-              });
-              console.log('[MintNFT] Receipt poll:', receipt);
-              if (receipt && receipt.status === '0x1') {
-                confirmed = true;
-                break;
-              } else if (receipt && receipt.status === '0x0') {
-                errorMsg = 'Transaction failed on-chain.';
-                console.log('[MintNFT] Transaction failed on-chain:', receipt);
-                break;
-              }
-            } catch (e: any) {
-              console.log('[MintNFT] Error polling for receipt:', e);
-              errorMsg = e?.message || e?.toString();
-              break;
-            }
-            await new Promise(res => setTimeout(res, 2000));
-          }
-          if (confirmed) {
-            setTxStatus('confirmed');
-            // Update greeting status to sent
-            storageService.updateGreetingStatus(greetingId, 'sent', tx);
-            console.log('[MintNFT] Greeting status updated to sent');
-            setStep(1);
-            setPrompt("");
-            setGreetingData(null);
-            setRecipient("");
-            setSelectedDesign("festive-gold");
-            setCurrentGreetingId(null);
-            setIsEditingMessage(false);
-            setEditedMessage("");
-            toast.success("NFT minted successfully!");
-          } else if (errorMsg) {
-            setTxStatus('failed');
-            // Update greeting status to failed
-            storageService.updateGreetingStatus(greetingId, 'failed', tx);
-            console.log('[MintNFT] Greeting status updated to failed');
-            setFailureReason(errorMsg || "Transaction was not confirmed in time.");
-            setShowFailureModal(true);
-            setStep(3);
-          }
-          setMinting(false);
-        })();
+        // Note: Transaction confirmation is now handled by useWaitForTransactionReceipt hook
+        // The useEffect hooks above will handle success/failure states automatically
         return;
       } else {
         console.log('[MintNFT] No transaction hash returned:', tx);
@@ -286,8 +294,8 @@ const AIGreetingCreator = () => {
       setFailureReason(error?.message || error?.toString());
       setShowFailureModal(true);
       setStep(3);
+      setMinting(false);
     }
-    setMinting(false);
   };
 
   return (
@@ -483,11 +491,23 @@ const AIGreetingCreator = () => {
               <div className="animate-bounce mb-6">
                 <Gem className="w-16 h-16 mx-auto text-festify-lemon-green" />
               </div>
-              <h3 className="text-2xl font-bold mb-4">Minting Your NFT...</h3>
+              <h3 className="text-2xl font-bold mb-4">
+                {txStatus === 'pending' ? 'Confirming Transaction...' : 'Minting Your NFT...'}
+              </h3>
               <div className="w-64 h-2 bg-gray-200 rounded-full mx-auto mb-4">
                 <div className="h-full bg-gradient-to-r from-festify-lemon-green to-festify-green rounded-full animate-pulse" style={{width: '75%'}}></div>
               </div>
-              <p className="text-gray-600">Creating your unique AI-powered greeting NFT...</p>
+              <p className="text-gray-600">
+                {txStatus === 'pending' 
+                  ? 'Waiting for blockchain confirmation...' 
+                  : 'Creating your unique AI-powered greeting NFT...'
+                }
+              </p>
+              {txHash && (
+                <p className="text-sm text-gray-500 mt-4 break-all">
+                  Transaction: {txHash.slice(0, 10)}...{txHash.slice(-8)}
+                </p>
+              )}
             </CardContent>
           </Card>
         )}
