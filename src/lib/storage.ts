@@ -13,6 +13,7 @@ export interface UserGreeting {
   selectedDesign: string;
   userAddress: string;
   greetingData: any;
+  useFallback?: boolean;
 }
 
 class StorageService {
