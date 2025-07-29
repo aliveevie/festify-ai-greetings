@@ -39,8 +39,73 @@ const AIGreetingCreator = () => {
   const [currentGreetingId, setCurrentGreetingId] = useState<string | null>(null);
   const [isEditingMessage, setIsEditingMessage] = useState(false);
   const [editedMessage, setEditedMessage] = useState("");
+  const [usageInfo, setUsageInfo] = useState<any>(null);
+  const [isRateLimited, setIsRateLimited] = useState(false);
+  const [isBlocked, setIsBlocked] = useState(false);
+  const [blockUntil, setBlockUntil] = useState<string | null>(null);
 
   const { address, isConnected } = useAccount();
+
+  // Check client-side blocking status
+  useEffect(() => {
+    const checkClientBlocking = () => {
+      const lastGeneration = localStorage.getItem('lastGreetingGeneration');
+      const blockUntilTime = localStorage.getItem('greetingBlockUntil');
+      
+      if (lastGeneration && blockUntilTime) {
+        const now = Date.now();
+        const blockTime = parseInt(blockUntilTime);
+        
+        if (now < blockTime) {
+          setIsBlocked(true);
+          setBlockUntil(new Date(blockTime).toISOString());
+          return true; // User is blocked
+        } else {
+          // Block period is over, clear storage
+          localStorage.removeItem('lastGreetingGeneration');
+          localStorage.removeItem('greetingBlockUntil');
+          setIsBlocked(false);
+          setBlockUntil(null);
+        }
+      }
+      return false; // User is not blocked
+    };
+
+    const isBlocked = checkClientBlocking();
+    
+    if (!isBlocked) {
+      // Only check server usage if not blocked client-side
+      const checkUsageStatus = async () => {
+        try {
+          const API_BASE_URL = 
+            window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+              ? 'http://localhost:3001'
+              : 'https://festify-server-iwil.onrender.com';
+          const res = await fetch(`${API_BASE_URL}/api/usage-status`);
+          const data = await res.json();
+          setUsageInfo(data);
+        } catch (error) {
+          console.log('Could not check usage status:', error);
+        }
+      };
+
+      if (isConnected) {
+        checkUsageStatus();
+      }
+    }
+  }, [isConnected]);
+
+  // Helper function to set client-side blocking
+  const setClientBlocking = () => {
+    const now = Date.now();
+    const blockUntil = now + (12 * 60 * 60 * 1000); // 12 hours from now
+    
+    localStorage.setItem('lastGreetingGeneration', now.toString());
+    localStorage.setItem('greetingBlockUntil', blockUntil.toString());
+    
+    setIsBlocked(true);
+    setBlockUntil(new Date(blockUntil).toISOString());
+  };
 
   // Helper function to generate greeting title from AI response
   const generateGreetingTitle = (greetingData: any): string => {
@@ -325,12 +390,21 @@ const AIGreetingCreator = () => {
       return;
     }
     
+    // Check if user is blocked client-side
+    if (isBlocked) {
+      toast.error("You must wait 12 hours between greeting generations. Please try again later.");
+      return;
+    }
+    
     if (!prompt.trim()) return;
     setIsGenerating(true);
     setStep(2);
     setAiResponse(`🤖 Analyzing your request: "${prompt}"
 \nI'm crafting a personalized festival greeting...`);
     setGreetingData(null);
+    setIsRateLimited(false);
+    setUsageInfo(null);
+    
     try {
       const API_BASE_URL = 
         window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
@@ -342,9 +416,26 @@ const AIGreetingCreator = () => {
         body: JSON.stringify({ prompt }),
       });
       const data = await res.json();
+      
+      if (res.status === 429) {
+        // Rate limited
+        setIsRateLimited(true);
+        setUsageInfo(data);
+        setAiResponse(
+          `⏰ Rate limit exceeded!\n\n${data.message}\n\nYou can generate again at: ${new Date(data.nextAllowed).toLocaleString()}`
+        );
+        setIsGenerating(false);
+        return;
+      }
+      
       if (!res.ok) throw new Error(data.error || "Unknown error from API");
+      
+      // Set client-side blocking after successful generation
+      setClientBlocking();
+      
       setAiResponse("AI greeting generated successfully!");
       setGreetingData(data.result);
+      setUsageInfo(data.usage);
       setStep(3);
     } catch (error: any) {
       setAiResponse(
@@ -412,6 +503,47 @@ const AIGreetingCreator = () => {
                   </div>
                 </div>
               )}
+              
+              {isBlocked && blockUntil && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                  <div className="flex items-center">
+                    <div className="flex-shrink-0">
+                      <svg className="h-5 w-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                      </svg>
+                    </div>
+                    <div className="ml-3">
+                      <h3 className="text-sm font-medium text-red-800">
+                        Generation Blocked
+                      </h3>
+                      <div className="mt-2 text-sm text-red-700">
+                        <p>You must wait 12 hours between greeting generations.</p>
+                        <p className="mt-1 font-medium">Next generation available at: {new Date(blockUntil).toLocaleString()}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              {!isBlocked && usageInfo && usageInfo.dailyCount > 0 && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                  <div className="flex items-center">
+                    <div className="flex-shrink-0">
+                      <svg className="h-5 w-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <div className="ml-3">
+                      <h3 className="text-sm font-medium text-blue-800">
+                        Usage Reminder
+                      </h3>
+                      <div className="mt-2 text-sm text-blue-700">
+                        <p>You've generated {usageInfo.dailyCount} greeting(s) today. Next generation available at: {new Date(usageInfo.nextAllowed).toLocaleString()}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
               <div>
                 <label className="block text-sm font-medium mb-2">Tell our AI agent what kind of greeting you want to create:</label>
                 <Textarea
@@ -419,17 +551,42 @@ const AIGreetingCreator = () => {
                   onChange={(e) => setPrompt(e.target.value)}
                   placeholder="Example: Create a Diwali greeting for my grandmother who lives in Mumbai. She loves traditional sweets and always lights diyas. Make it warm and personal with golden colors and include blessings for health and happiness."
                   className="min-h-32"
-                  disabled={!isConnected}
+                  disabled={!isConnected || isBlocked}
                 />
               </div>
               <Button 
                 onClick={handleGenerateGreeting}
-                disabled={!isConnected || !prompt.trim() || isGenerating}
-                className="w-full bg-gradient-to-r from-festify-lemon-green to-festify-green hover:from-festify-green hover:to-festify-apple-green text-white py-3 text-lg"
+                disabled={!isConnected || !prompt.trim() || isGenerating || isBlocked}
+                className={`w-full py-3 text-lg ${
+                  isBlocked 
+                    ? 'bg-gray-400 cursor-not-allowed text-white' 
+                    : 'bg-gradient-to-r from-festify-lemon-green to-festify-green hover:from-festify-green hover:to-festify-apple-green text-white'
+                }`}
               >
                 <Sparkles className="w-5 h-5 mr-2" />
-                {!isConnected ? "Connect Wallet First" : "Generate with AI"}
+                {!isConnected ? "Connect Wallet First" : isBlocked ? "Generation Blocked" : isRateLimited ? "Rate Limited" : "Generate with AI"}
               </Button>
+              
+              {isRateLimited && usageInfo && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4 mt-4">
+                  <div className="flex items-center">
+                    <div className="flex-shrink-0">
+                      <svg className="h-5 w-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                      </svg>
+                    </div>
+                    <div className="ml-3">
+                      <h3 className="text-sm font-medium text-red-800">
+                        Rate Limit Exceeded
+                      </h3>
+                      <div className="mt-2 text-sm text-red-700">
+                        <p>{usageInfo.message}</p>
+                        <p className="mt-1 font-medium">Next generation available: {new Date(usageInfo.nextAllowed).toLocaleString()}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         )}
