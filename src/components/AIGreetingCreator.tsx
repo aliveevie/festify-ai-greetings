@@ -175,11 +175,9 @@ const AIGreetingCreator = () => {
     };
     
     // Return as data URI to avoid IPFS dependency
-    // Use Buffer for better compatibility across environments
     const jsonString = JSON.stringify(metadata, null, 2);
-    const base64String = typeof window !== 'undefined' 
-      ? btoa(unescape(encodeURIComponent(jsonString)))
-      : Buffer.from(jsonString).toString('base64');
+    // Use browser-native btoa for base64 encoding
+    const base64String = btoa(unescape(encodeURIComponent(jsonString)));
     
     return `data:application/json;base64,${base64String}`;
   };
