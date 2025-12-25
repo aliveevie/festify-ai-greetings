@@ -208,7 +208,7 @@ export class PinataService {
           },
           {
             trait_type: 'Blockchain',
-            value: 'Hyperion'
+            value: 'LazAI'
           }
         ],
         external_url: 'https://festify-ai.vercel.app/'
