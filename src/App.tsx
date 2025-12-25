@@ -11,6 +11,25 @@ import '@rainbow-me/rainbowkit/styles.css';
 
 const queryClient = new QueryClient();
 
+const lazaiMainnet = {
+  id: 52924,
+  name: 'LazAI Mainnet',
+  network: 'lazai-mainnet',
+  nativeCurrency: {
+    name: 'Metis',
+    symbol: 'METIS',
+    decimals: 18,
+  },
+  rpcUrls: {
+    default: { http: ['https://mainnet.lazai.network'] },
+    public: { http: ['https://mainnet.lazai.network'] },
+  },
+  blockExplorers: {
+    default: { name: 'LazAI Explorer', url: 'https://explorer.mainnet.lazai.network' },
+  },
+  testnet: false,
+};
+
 const hyperionTestnet = {
   id: 133717,
   name: 'Hyperion Testnet',
@@ -33,7 +52,7 @@ const hyperionTestnet = {
 const config = getDefaultConfig({
   appName: 'Festify',
   projectId: import.meta.env.VITE_WC_PROJECT_ID,
-  chains: [hyperionTestnet],
+  chains: [lazaiMainnet, hyperionTestnet], // LazAI is first, making it the default
 });
 
 const App = () => (
