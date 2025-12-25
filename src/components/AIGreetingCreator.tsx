@@ -339,7 +339,7 @@ const AIGreetingCreator = () => {
       const API_BASE_URL = 
         window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
           ? 'http://localhost:3001'
-          : 'https://festify-server-iwil.onrender.com';
+          : 'https://festify-ai-greetings.onrender.com';
       const res = await fetch(`${API_BASE_URL}/api/generate-greeting`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
