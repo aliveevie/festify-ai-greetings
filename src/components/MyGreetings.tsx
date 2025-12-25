@@ -115,7 +115,7 @@ const MyGreetings = () => {
   const handleViewOnBlockchain = (greeting: UserGreeting) => {
     if (greeting.txHash) {
       // Use the same explorer URL as in SuccessModal
-      const explorerUrl = `https://hyperion-testnet-explorer.metisdevops.link/tx/${greeting.txHash}`;
+      const explorerUrl = `https://explorer.mainnet.lazai.network/tx/${greeting.txHash}`;
       window.open(explorerUrl, '_blank', 'noopener,noreferrer');
     } else {
       toast.error("No transaction hash available");

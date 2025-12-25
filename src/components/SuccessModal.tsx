@@ -286,7 +286,7 @@ const SuccessModal = ({ isOpen, onClose, greetingData, txHash, txStatus, selecte
               <div className="mt-4 text-xs text-gray-500 break-all flex flex-col items-center gap-2">
                 <span className="font-semibold text-gray-700">Transaction Hash:</span>
                 <a
-                  href={`https://hyperion-testnet-explorer.metisdevops.link/tx/${txHash}`}
+                  href={`https://explorer.mainnet.lazai.network/tx/${txHash}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-festify-green underline break-all"
