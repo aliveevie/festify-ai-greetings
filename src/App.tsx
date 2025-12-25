@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Create from "./pages/Create";
+import DAT from "./pages/DAT";
 import NotFound from "./pages/NotFound";
 import { getDefaultConfig, RainbowKitProvider } from '@rainbow-me/rainbowkit';
 import { WagmiProvider } from 'wagmi';
@@ -65,6 +66,7 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/create" element={<Create />} />
+              <Route path="/dat" element={<DAT />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>

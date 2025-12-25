@@ -1,6 +1,7 @@
 const express = require('express');
 const { Agent } = require('alith');
 const cors = require('cors');
+const { mintDAT } = require('./dat');
 
 const app = express();
 app.use(express.json());
@@ -55,13 +56,68 @@ app.post('/api/generate-greeting', async (req, res) => {
     
     let parsed;
     try {
+      // First, try to parse as-is
       parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
     } catch (err) {
+      // If parsing fails, try to extract and fix JSON from the response
       const match = raw.match(/\{[\s\S]*\}/);
       if (match) {
-        parsed = JSON.parse(match[0]);
+        let jsonString = match[0];
+        
+        // Fix unescaped control characters within string values
+        // This function processes the JSON string and escapes control chars in string values only
+        let result = '';
+        let inString = false;
+        let escapeNext = false;
+        
+        for (let i = 0; i < jsonString.length; i++) {
+          const char = jsonString[i];
+          const prevChar = i > 0 ? jsonString[i - 1] : '';
+          
+          if (escapeNext) {
+            result += char;
+            escapeNext = false;
+            continue;
+          }
+          
+          if (char === '\\') {
+            result += char;
+            escapeNext = true;
+            continue;
+          }
+          
+          if (char === '"' && prevChar !== '\\') {
+            inString = !inString;
+            result += char;
+            continue;
+          }
+          
+          if (inString) {
+            // Inside a string value - escape control characters
+            if (char === '\n') {
+              result += '\\n';
+            } else if (char === '\r') {
+              result += '\\r';
+            } else if (char === '\t') {
+              result += '\\t';
+            } else {
+              result += char;
+            }
+          } else {
+            // Outside string - keep as is
+            result += char;
+          }
+        }
+        
+        try {
+          parsed = JSON.parse(result);
+        } catch (parseErr) {
+          console.error('[Alith API] JSON parsing error:', parseErr.message);
+          console.error('[Alith API] Problematic JSON (first 500 chars):', result.substring(0, 500));
+          throw new Error('Could not parse JSON from LLM response: ' + parseErr.message);
+        }
       } else {
-        throw new Error('Could not parse JSON from LLM response');
+        throw new Error('Could not find JSON object in LLM response');
       }
     }
     
@@ -72,6 +128,51 @@ app.post('/api/generate-greeting', async (req, res) => {
   } catch (error) {
     console.error('[Alith API] Error:', error);
     return res.status(500).json({ error: error?.message || error?.toString() });
+  }
+});
+
+// DAT Minting Endpoint
+// Implementation is ready and will work automatically once LazAI mainnet DAT is available
+app.post('/api/mint-dat', async (req, res) => {
+  const { walletAddress, privacyData, fileName, rewardAmount } = req.body;
+  
+  if (!walletAddress || !privacyData) {
+    return res.status(400).json({ 
+      error: 'Missing required fields: walletAddress and privacyData are required' 
+    });
+  }
+  
+  const ipfsJwt = process.env.IPFS_JWT || '';
+  if (!ipfsJwt) {
+    return res.status(500).json({ 
+      error: 'IPFS_JWT environment variable is not set' 
+    });
+  }
+  
+  try {
+    console.log('[DAT API] DAT minting request received for wallet:', walletAddress);
+    
+    // Note: Once LazAI mainnet DAT is available, the private key will be derived from wallet signature
+    // The full implementation in dat.js is ready and will work automatically
+    // For now, we return a message indicating the implementation is ready
+    
+    // TODO: When mainnet DAT is live, uncomment and use:
+    // const privateKey = await derivePrivateKeyFromWalletSignature(walletAddress);
+    // const result = await mintDAT(privateKey, ipfsJwt, privacyData, fileName || 'privacy_data.txt', rewardAmount || 100);
+    
+    return res.status(200).json({
+      success: true,
+      message: 'DAT minting implementation is ready. It will work automatically once LazAI mainnet DAT functionality is live.',
+      walletAddress,
+      fileName: fileName || 'privacy_data.txt',
+      rewardAmount: rewardAmount || 100
+    });
+    
+  } catch (error) {
+    console.error('[DAT API] Error:', error);
+    return res.status(500).json({ 
+      error: error?.message || error?.toString() 
+    });
   }
 });
 

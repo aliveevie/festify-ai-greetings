@@ -35,7 +35,7 @@ const Footer = () => {
             <h4 className="text-lg font-semibold mb-4">Connect</h4>
             <div className="flex space-x-4">
               <a 
-                href="https://x.com/festify_ai" 
+                href="https://x.com/FestifyClub" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="p-2 bg-gray-700 rounded-full hover:bg-festify-green transition-colors"
