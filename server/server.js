@@ -8,6 +8,7 @@ app.use(express.json());
 const allowedOrigins = [
   'https://festify-ai.vercel.app',
   'http://localhost:3000', // add other local ports if needed
+  'https://festify.ai.ibxlab.com'
 ];
 
 app.use(cors());
