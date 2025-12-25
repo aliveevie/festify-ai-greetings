@@ -8,10 +8,25 @@ app.use(express.json());
 const allowedOrigins = [
   'https://festify-ai.vercel.app',
   'http://localhost:3000', // add other local ports if needed
-  'https://festify.ai.ibxlab.com'
+  'http://localhost:5173', // Vite dev server
+  'http://localhost:8080', // Alternative local port
+  'https://festify.ai.ibxlab.com',
+  'https://festify-ai-greetings.onrender.com'
 ];
 
-app.use(cors());
+app.use(cors({
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(null, true); // Allow all origins for now, can be restricted later
+    }
+  },
+  credentials: true
+}));
 
 const agent = new Agent({
   model: 'gpt-4',
